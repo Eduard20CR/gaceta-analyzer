@@ -1,0 +1,10 @@
+{
+  "name": "@gaceta/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "React + Vite frontend. Vite is added in M4.",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

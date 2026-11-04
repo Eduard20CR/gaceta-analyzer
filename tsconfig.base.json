@@ -1,0 +1,28 @@
+{
+  // Base TypeScript settings shared by every workspace (NFR-MAINT-01).
+  // Each workspace has its own tsconfig.json that extends this file.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    // "bundler" instead of "NodeNext": the code never runs straight from tsc output.
+    // The Lambdas are bundled by esbuild (ADR-0002) and the web app by Vite (ADR-0008),
+    // so imports are resolved by a bundler. This lets us write imports without the
+    // ".js" extension and lets workspaces point at TypeScript sources directly.
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "skipLibCheck": true,
+    // Bundlers produce the output; tsc is only used to check types.
+    "noEmit": true
+  }
+}
