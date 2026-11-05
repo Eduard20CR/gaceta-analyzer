@@ -6,7 +6,8 @@
   "description": "AWS Lambda handlers (authorizer, create-job, analyze-pdf, get-job, list-jobs).",
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "analyze:local": "tsx scripts/analyze-local.ts"
   },
   "dependencies": {
     "@gaceta/shared": "*",
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
     "vitest": "^5.1.0"
   }
 }
