@@ -15,7 +15,8 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "npm test --workspaces --if-present"
+    "test": "npm test --workspaces --if-present",
+    "build:api": "npm run build -w @gaceta/api"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

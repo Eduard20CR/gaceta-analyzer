@@ -48,3 +48,8 @@ jobs:
 
       - name: Test
         run: npm test
+
+      # Bundles each Lambda into its own zip and imports every zip once (#25),
+      # so a bundling problem fails the PR instead of the deploy.
+      - name: Build the Lambda zips
+        run: npm run build:api
