@@ -2,8 +2,10 @@
   // Base TypeScript settings shared by every workspace (NFR-MAINT-01).
   // Each workspace has its own tsconfig.json that extends this file.
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022"],
+    // Node.js 24 (Lambda runtime, ADR-0002) and current browsers support ES2024,
+    // so there is no reason to type-check against an older language version.
+    "target": "ES2024",
+    "lib": ["ES2024"],
     "module": "ESNext",
     // "bundler" instead of "NodeNext": the code never runs straight from tsc output.
     // The Lambdas are bundled by esbuild (ADR-0002) and the web app by Vite (ADR-0008),
@@ -13,14 +15,25 @@
     "moduleDetection": "force",
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
+    // Only allow TypeScript syntax that can be removed without changing the code
+    // (no enums, namespaces or parameter properties). Tools like esbuild, Vite and
+    // Node.js type stripping handle this safely, and the code stays plain JavaScript.
+    "erasableSyntaxOnly": true,
     "resolveJsonModule": true,
 
     "strict": true,
     "noUncheckedIndexedAccess": true,
+    // "name?: string" means the property may be missing, not that it may be
+    // explicitly set to undefined. This matches how DynamoDB items and JSON behave.
+    "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
+    // Fail on side-effect imports (import "./x") whose file does not exist.
+    "noUncheckedSideEffectImports": true,
     "forceConsistentCasingInFileNames": true,
 
+    // No global type packages unless a workspace asks for them (for example "node").
+    "types": [],
     "skipLibCheck": true,
     // Bundlers produce the output; tsc is only used to check types.
     "noEmit": true
