@@ -182,10 +182,10 @@ describe('analyzePages', () => {
     });
 
     expect(progressUpdates).toEqual([
-      { processedBlocks: 0, totalBlocks: 3 },
-      { processedBlocks: 1, totalBlocks: 3 },
-      { processedBlocks: 2, totalBlocks: 3 },
-      { processedBlocks: 3, totalBlocks: 3 },
+      { processedBlocks: 0, totalBlocks: 3, pageCount: 13 },
+      { processedBlocks: 1, totalBlocks: 3, pageCount: 13 },
+      { processedBlocks: 2, totalBlocks: 3, pageCount: 13 },
+      { processedBlocks: 3, totalBlocks: 3, pageCount: 13 },
     ]);
   });
 
@@ -212,6 +212,7 @@ describe('analyzePages', () => {
     expect(progressUpdates.at(-1)).toEqual({
       processedBlocks: 2,
       totalBlocks: 2,
+      pageCount: 9,
     });
   });
 
