@@ -52,12 +52,13 @@ describe('Layout', () => {
 
   it.each(['/login', '/', '/jobs/new', '/jobs/abc', '/no-existe'])(
     'wraps the page at %s',
-    (route) => {
+    async (route) => {
       renderWithProviders(<AppRoutes />, { route });
 
       expect(screen.getByRole('banner')).toBeInTheDocument();
+      // Some pages load their data first, so the heading can come a bit later.
       expect(screen.getByRole('main')).toContainElement(
-        screen.getByRole('heading', { level: 1 }),
+        await screen.findByRole('heading', { level: 1 }),
       );
     },
   );

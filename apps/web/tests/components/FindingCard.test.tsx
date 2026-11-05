@@ -1,0 +1,61 @@
+import { render, screen } from '@testing-library/react';
+import type { Finding } from '@gaceta/shared';
+import { describe, expect, it } from 'vitest';
+
+import { FindingCard } from '../../src/components/FindingCard';
+
+const FINDING: Finding = {
+  page: 14,
+  topic: 'Aranceles',
+  quote: 'Se modifica el arancel de importación del arroz',
+  reason: 'Cambia un arancel de importación',
+  relevance: 'high',
+  verification: 'verified',
+};
+
+describe('FindingCard', () => {
+  it('shows page, topic, relevance, quote, reason and verification', () => {
+    render(<FindingCard finding={FINDING} />);
+
+    expect(screen.getByText('Página 14')).toBeInTheDocument();
+    expect(screen.getByText('Aranceles')).toBeInTheDocument();
+    expect(screen.getByText('Relevancia: Alta')).toBeInTheDocument();
+    expect(
+      screen.getByText('Se modifica el arancel de importación del arroz'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Cambia un arancel de importación'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Cita verificada en el documento'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('note')).not.toBeInTheDocument();
+  });
+
+  it('shows the quote inside a quotation', () => {
+    render(<FindingCard finding={FINDING} />);
+
+    expect(
+      screen.getByText('Se modifica el arancel de importación del arroz')
+        .tagName,
+    ).toBe('BLOCKQUOTE');
+  });
+
+  it('notes when the page number was corrected', () => {
+    render(
+      <FindingCard finding={{ ...FINDING, verification: 'page_corrected' }} />,
+    );
+
+    expect(
+      screen.getByText('Cita verificada; el número de página se corrigió'),
+    ).toBeInTheDocument();
+  });
+
+  it('warns when the quote was not found in the document', () => {
+    render(<FindingCard finding={{ ...FINDING, verification: 'not_found' }} />);
+
+    expect(screen.getByRole('note')).toHaveTextContent(
+      'La cita no se encontró en el documento',
+    );
+  });
+});
