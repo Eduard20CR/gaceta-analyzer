@@ -21,6 +21,8 @@ coverage/
 crash.log
 *.tfplan
 .terraform.tfstate.lock.info
+# Local variable values (for example the budget alert email); see terraform.tfvars.example
+*.tfvars
 
 # OS and editor files
 .DS_Store

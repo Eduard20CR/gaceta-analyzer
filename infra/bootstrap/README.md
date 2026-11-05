@@ -58,12 +58,13 @@ The defaults fit this repository. If the repository is renamed or moved, pass th
 
 In GitHub, go to the repository → **Settings** → **Secrets and variables** → **Actions** → **Variables** tab → **New repository variable**, and create:
 
-| Name                  | Value                          |
-| --------------------- | ------------------------------ |
-| `AWS_DEPLOY_ROLE_ARN` | the `deploy_role_arn` output   |
-| `TF_STATE_BUCKET`     | the `state_bucket_name` output |
+| Name                  | Value                                                                         |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `AWS_DEPLOY_ROLE_ARN` | the `deploy_role_arn` output                                                  |
+| `TF_STATE_BUCKET`     | the `state_bucket_name` output                                                |
+| `BUDGET_ALERT_EMAIL`  | the email address that receives the AWS budget alarm (`infra/main/budget.tf`) |
 
-They are **variables**, not secrets: neither value gives access by itself. Do **not** create any AWS access key secret; the workflows use OIDC.
+They are **variables**, not secrets: none of these values gives access by itself. Do **not** create any AWS access key secret; the workflows use OIDC.
 
 A workflow job that uses the role must not set `environment:`. GitHub then sends a different identity and AWS rejects it (see the trust policy in [`github-oidc.tf`](github-oidc.tf)).
 

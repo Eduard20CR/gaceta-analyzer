@@ -95,7 +95,7 @@ data "aws_iam_policy_document" "github_deploy_permissions" {
     resources = ["*"]
   }
 
-  # The monthly budget alarm (NFR-COST-03).
+  # The monthly budget alarm (NFR-COST-01).
   statement {
     sid     = "BudgetsProjectBudgets"
     actions = ["budgets:*"]

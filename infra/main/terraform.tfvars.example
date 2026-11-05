@@ -1,0 +1,3 @@
+# Copy this file to terraform.tfvars (git-ignored) to run plan/apply locally.
+# In GitHub Actions the value comes from the repository variable BUDGET_ALERT_EMAIL.
+budget_alert_email = "name@example.com"

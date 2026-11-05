@@ -80,3 +80,10 @@ Everything in AWS is created by Terraform, in region `us-east-1` (ADR-0011):
   terraform init -backend=false
   terraform validate
   ```
+
+`infra/main/` has one input variable, `budget_alert_email`: the address that receives the AWS Budgets alarm (an email at 80% of USD 10 in a month, plus one when AWS forecasts the month will end above USD 10; NFR-COST-01). It is personal, so it is never written in the repository:
+
+- **GitHub Actions:** create the repository variable `BUDGET_ALERT_EMAIL` (see [`infra/bootstrap/README.md`](infra/bootstrap/README.md), step 2). The deploy workflow passes it to Terraform as `TF_VAR_budget_alert_email`.
+- **Locally:** copy `infra/main/terraform.tfvars.example` to `infra/main/terraform.tfvars` (git-ignored) and write the address there, or pass `-var 'budget_alert_email=name@example.com'`.
+
+`terraform validate` does not need it; `plan` and `apply` do.
