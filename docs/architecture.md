@@ -296,6 +296,7 @@ gaceta-analyzer/
 │       │       ├── blocks.ts            # block building
 │       │       ├── ai-client.ts         # DeepSeek calls
 │       │       ├── findings.ts          # verification and deduplication
+│       │       ├── analysis.ts          # whole pipeline: pages → blocks → AI → findings
 │       │       ├── http.ts              # common HTTP responses
 │       │       └── logger.ts
 │       ├── tests/
