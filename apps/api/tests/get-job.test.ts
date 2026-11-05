@@ -111,7 +111,7 @@ describe('get-job handler', () => {
   });
 
   it('returns a processing job without findings', async () => {
-    const job = makeJob({ status: 'PROCESSING', processedBlocks: 3 });
+    const job = makeJob({ status: 'PROCESSING' });
     vi.mocked(getJob).mockResolvedValue(job);
 
     const response = await handler(eventForId(ID));
