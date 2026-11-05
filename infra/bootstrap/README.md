@@ -1,13 +1,18 @@
 # Terraform bootstrap
 
-This folder creates the few AWS resources that must exist **before** GitHub Actions can deploy anything (ADR-0011):
+This folder creates the few AWS resources that must exist **before** GitHub Actions can deploy anything (ADR-0011). It also uses the account's existing GitHub OIDC provider, which it does not create (see below).
 
 | Resource          | Name                                   | Why                                                                                                                 |
 | ----------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | S3 bucket         | `gaceta-analyzer-tfstate-<account id>` | Stores the Terraform state of `infra/main` (versioned, encrypted, never public).                                    |
-| IAM OIDC provider | `token.actions.githubusercontent.com`  | Lets GitHub Actions get temporary AWS credentials, so no access keys live in GitHub (NFR-SEC-09).                   |
 | IAM role          | `gaceta-analyzer-github-deploy`        | Assumed by the workflows of this repository: on the `main` branch (deploy) and on pull requests (`terraform plan`). |
 | IAM policy        | `gaceta-analyzer-lambda-boundary`      | Permissions boundary: the most any Lambda role created by `infra/main` can ever do.                                 |
+
+## The GitHub OIDC provider is shared
+
+The IAM OIDC provider `token.actions.githubusercontent.com` lets GitHub Actions get temporary AWS credentials, so no access keys live in GitHub (NFR-SEC-09). An AWS account can have **only one** provider for that URL, and every project in the account that deploys from GitHub shares it. Each project adds its own IAM role, and that role's trust policy decides which repository may use it.
+
+So the bootstrap does **not** create the provider: it looks it up (`data "aws_iam_openid_connect_provider"` in [`github-oidc.tf`](github-oidc.tf)). This project never changes or deletes it, and the deploy role still trusts only this repository. If another project deletes the provider, this project's deploys stop working until it is created again.
 
 It is applied **once, by hand**, from your computer. Its state (`terraform.tfstate`) stays on your computer: it is git-ignored and must not be committed. Keep a copy somewhere safe (for example, a password manager); if it is lost, the resources keep working, but changing them again needs `terraform import`.
 
@@ -32,13 +37,28 @@ When `infra/main` needs a new AWS service, add it to [`deploy-role-permissions.t
   ```
 
 - Admin access to the GitHub repository.
+- The GitHub OIDC provider in the account. Check that it exists:
+
+  ```sh
+  aws iam list-open-id-connect-providers
+  ```
+
+  The output must contain an ARN ending in `oidc-provider/token.actions.githubusercontent.com`. If it is missing, create it once (it is shared by every project in the account):
+
+  ```sh
+  aws iam create-open-id-connect-provider \
+    --url https://token.actions.githubusercontent.com \
+    --client-id-list sts.amazonaws.com
+  ```
+
+  Its audience must include `sts.amazonaws.com` (check with `aws iam get-open-id-connect-provider --open-id-connect-provider-arn <arn>`).
 
 ## 1. Apply the bootstrap (issue #27)
 
 ```sh
 cd infra/bootstrap
 terraform init
-terraform plan     # read it: only the resources in the table above should be created
+terraform plan     # read it: only the resources in the table above should be created (the OIDC provider is only read)
 terraform apply
 ```
 

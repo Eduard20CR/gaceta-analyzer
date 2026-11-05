@@ -1,12 +1,16 @@
 # Lets GitHub Actions get temporary AWS credentials through OIDC, so no AWS access
 # keys are stored in GitHub (NFR-SEC-09).
-
-resource "aws_iam_openid_connect_provider" "github" {
-  url            = "https://${local.github_oidc_host}"
-  client_id_list = [local.github_oidc_audience]
-
-  # No thumbprint_list: AWS validates GitHub's certificate with its own list of
-  # trusted root authorities, so a pinned thumbprint is no longer needed.
+#
+# An AWS account can have only ONE OIDC provider for GitHub's URL, and every
+# project in the account shares it. This account already has one (created by
+# another project), so the bootstrap only looks it up instead of creating it.
+# That way this project never owns, changes or deletes the shared provider; it
+# only adds its own role, which trusts this repository alone (see below).
+#
+# If the account has no GitHub provider yet, create it once by hand (see the
+# README, "Before you start") and then apply this folder.
+data "aws_iam_openid_connect_provider" "github" {
+  url = "https://${local.github_oidc_host}"
 }
 
 # The role the workflows assume: `terraform plan` on pull requests (ci.yml) and
@@ -26,7 +30,7 @@ data "aws_iam_policy_document" "github_deploy_trust" {
 
     principals {
       type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
+      identifiers = [data.aws_iam_openid_connect_provider.github.arn]
     }
 
     # The token must be meant for AWS STS.
