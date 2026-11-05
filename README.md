@@ -18,6 +18,7 @@ npm install         # installs every workspace and links them together
 npm run lint        # ESLint on all workspaces (no warnings allowed)
 npm run typecheck   # TypeScript check of every workspace
 npm test            # Vitest tests of every workspace that has them
+npm run build:api   # one zip per Lambda in apps/api/dist/, then a smoke test of each zip
 ```
 
 `npm run format` rewrites files with Prettier, and `npm run format:check` only checks them.

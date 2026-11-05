@@ -255,6 +255,7 @@ Used by the login screen (FR-01) to check the password. If the request reaches t
 | `DEEPSEEK_API_KEY_PARAM` | analyze | `/gaceta-analyzer/deepseek-api-key` |
 | `DEEPSEEK_MODEL` | analyze | `deepseek-v4-flash` |
 | `MAX_CONCURRENCY` | analyze | `5` |
+| `NODE_OPTIONS` | all | `--enable-source-maps` (stack traces point at the `.ts` lines of the bundle's source map) |
 
 The pages per block is not an environment variable: it comes from each job (see ADR-0012). The default (5) and the fixed overlap (1) are constants in `packages/shared`, so the web form and the API use the same values.
 
@@ -302,9 +303,10 @@ gaceta-analyzer/
 │       │       └── logger.ts
 │       ├── scripts/
 │       │   ├── analyze-local.ts    # local CLI: analyzes a PDF with the real pipeline
-│       │   └── local-cli.ts        # the CLI's argument parsing and output (tested)
+│       │   ├── local-cli.ts        # the CLI's argument parsing and output (tested)
+│       │   └── check-bundles.mjs   # smoke test of the zips written by build.mjs
 │       ├── tests/
-│       └── build.mjs               # esbuild: one zip per handler
+│       └── build.mjs               # esbuild: one zip per handler (dist/<handler>.zip)
 ├── packages/
 │   └── shared/                     # types, constants and API contract
 ├── scripts/
