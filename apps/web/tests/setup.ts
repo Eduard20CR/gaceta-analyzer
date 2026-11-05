@@ -13,15 +13,7 @@ import {
 } from './msw/unhandled-requests';
 
 beforeAll(() => {
-  // Tests must never reach a real server. A request with no handler is an
-  // error (MSW logs it and the request fails), and is also recorded so the
-  // check in afterEach fails the test even if the app swallows the network error.
-  server.listen({
-    onUnhandledFrame: ({ frame, defaults }) => {
-      recordUnhandledRequest(describeFrame(frame));
-      defaults.error();
-    },
-  });
+  server.listen({ onUnhandledFrame: blockUnhandledRequest });
 });
 
 afterEach(() => {
@@ -41,6 +33,28 @@ afterEach(() => {
 afterAll(() => {
   server.close();
 });
+
+/**
+ * Called by MSW for every request that no handler answered. Tests must never
+ * reach a real server, so the request is blocked: throwing here makes MSW
+ * answer it with an error instead of sending it to the network.
+ *
+ * The app turns network errors into a Spanish message, so a page could hide
+ * that failure and the test could still pass. Recording the request lets the
+ * check in afterEach fail the test that made it.
+ *
+ * (MSW's own `'error'` option is not used: with a custom function like this
+ * one, MSW 3 only blocks the request if the function throws.)
+ */
+function blockUnhandledRequest({
+  frame,
+}: {
+  frame: { protocol: string; data: unknown };
+}): never {
+  const description = describeFrame(frame);
+  recordUnhandledRequest(description);
+  throw new Error(`Blocked a request without an MSW handler: ${description}`);
+}
 
 /** "GET http://localhost:3000/api/x" for an HTTP request, the protocol otherwise. */
 function describeFrame(frame: { protocol: string; data: unknown }): string {

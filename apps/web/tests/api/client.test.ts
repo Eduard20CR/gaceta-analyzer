@@ -152,8 +152,12 @@ describe('uploadPdf', () => {
     server.use(
       http.post(FAKE_UPLOAD_URL, async ({ request }) => {
         authorization = request.headers.get('Authorization');
-        const form = await request.formData();
-        fieldNames = [...form.keys()];
+        // The multipart body is read as text: Node's `formData()` parser does
+        // not accept the File objects that jsdom's XMLHttpRequest sends.
+        const body = await request.text();
+        fieldNames = [...body.matchAll(/form-data; name="([^"]+)"/g)].map(
+          (match) => match[1] ?? '',
+        );
         return s3Response(204);
       }),
     );
