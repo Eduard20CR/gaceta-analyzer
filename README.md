@@ -44,6 +44,15 @@ Options:
 
 Paths are relative to the folder where you run the command. Progress goes to stderr and the summary and findings to stdout.
 
+## Run the web app locally
+
+```sh
+cp apps/web/.env.example apps/web/.env.local   # then set VITE_DEV_API_PROXY_TARGET
+npm run dev -w @gaceta/web                     # http://localhost:5173
+```
+
+The dev server forwards every `/api` request to the deployed API Gateway URL in `VITE_DEV_API_PROXY_TARGET`, so the app uses the same relative paths as in production. `npm run build -w @gaceta/web` writes the production files to `apps/web/dist/`.
+
 ## Repository map
 
 | Path                 | Contents                                                                     |

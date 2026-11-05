@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // `tsc -b` (npm run typecheck) keeps its incremental cache here, outside the repo.
+    "tsBuildInfoFile": "../../node_modules/.cache/tsc/web-app.tsbuildinfo",
+    // The web app runs in the browser, so it needs the DOM types.
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    // `import.meta.env` and imports of assets, from Vite.
+    "types": ["vite/client"],
+    // React 17+ JSX transform: no `import React` needed in every file.
+    "jsx": "react-jsx"
+  },
+  "include": ["src"]
+}
