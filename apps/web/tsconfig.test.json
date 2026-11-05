@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // `tsc -b` (npm run typecheck) keeps its incremental cache here, outside the repo.
+    "tsBuildInfoFile": "../../node_modules/.cache/tsc/web-test.tsbuildinfo",
+    // Tests render the app in jsdom, so they need the DOM types like src/ does.
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    // vite/client: tests import app files that use `import.meta.env`.
+    // node: MSW's server (msw/node) runs in Node.js, outside the fake browser.
+    "types": ["vite/client", "node"],
+    "jsx": "react-jsx"
+  },
+  // src is included because the tests import it; tsconfig.app.json still checks
+  // src on its own without any test or Node.js types.
+  "include": ["tests", "src"]
+}
