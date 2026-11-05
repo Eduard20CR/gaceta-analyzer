@@ -1,0 +1,50 @@
+# Runs on every pull request to main (NFR-DEP-04, NFR-MAINT-01, NFR-MAINT-05).
+# Any failing step fails the workflow, so a PR with lint, format, type or test
+# errors shows a red check. `terraform plan` is added in M3 (#34).
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# The workflow only needs to read the code. Jobs that need more (for example,
+# the OIDC deploy in M3) must ask for it explicitly.
+permissions:
+  contents: read
+
+# A new push to the same PR cancels the run that is still going for the old commit.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, typecheck and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js from .nvmrc
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
