@@ -1,7 +1,7 @@
 # ADR-0009 — Text extraction with unpdf
 
-- **Status:** Proposed
-- **Date:** 2026-11-04
+- **Status:** Accepted
+- **Date:** 2026-11-04 (accepted 2026-11-05 after [spike 0001](../spikes/0001-pdf-extraction.md))
 
 ## Context
 
@@ -22,4 +22,5 @@ Use **unpdf**, a wrapper around pdf.js (Mozilla's PDF engine) designed for serve
 - Pure JavaScript: simple bundling with esbuild, no architecture issues.
 - The frontend viewer (react-pdf) also uses pdf.js, so coordinates computed in the backend will match the viewer's when highlighting is implemented.
 - Large PDFs (up to 100 MB) are loaded fully into memory. The analysis Lambda has 3008 MB for this reason (NFR-REL-05).
-- **Risk:** pdf.js may order text worse on multi-column pages. In phase 2 its extraction is compared with PyMuPDF on a real La Gaceta PDF. If quality is noticeably worse, switch to mupdf with a new ADR. All PDF access goes through `lib/pdf.ts`, so the change touches a single file.
+- **Risk checked:** pdf.js might order text worse on multi-column pages. [Spike 0001](../spikes/0001-pdf-extraction.md) compared it with PyMuPDF on a real 116-page La Gaceta PDF: the text and its order are almost the same, and each column is kept whole. mupdf is not needed. If a future PDF shows otherwise, switch with a new ADR; all PDF access goes through `lib/pdf.ts`, so the change touches a single file.
+- unpdf writes a word broken across lines (soft hyphen) and a real hyphen at the end of a line the same way (`-`). Quote verification (#13) must handle both (see the spike).

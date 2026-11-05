@@ -10,6 +10,7 @@ Single-user web application that analyzes long PDFs (for example, La Gaceta, Cos
 | [requirements/non-functional.md](requirements/non-functional.md) | Security, cost, performance, operations |
 | [architecture.md](architecture.md) | Components, flow, data model and API contract |
 | [adr/](adr/) | Architecture Decision Records |
+| [spikes/](spikes/) | Short investigations that back a decision (method, examples, verdict) |
 
 ## Scope by version
 

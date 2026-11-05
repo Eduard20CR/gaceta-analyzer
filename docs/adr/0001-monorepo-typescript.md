@@ -25,4 +25,4 @@ A single repository with **npm workspaces** and **TypeScript** everywhere:
 
 - A change to a shared type is caught at compile time in both the frontend and the backend.
 - A single `npm install` and a single pipeline.
-- Text extraction with JavaScript libraries may be somewhat worse than PyMuPDF on multi-column documents. This is checked in phase 2 with a real PDF (see ADR-0009).
+- Text extraction with JavaScript libraries may be somewhat worse than PyMuPDF on multi-column documents. [Spike 0001](../spikes/0001-pdf-extraction.md) checked it with a real La Gaceta PDF: unpdf is as good as PyMuPDF (see ADR-0009).

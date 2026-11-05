@@ -269,7 +269,8 @@ gaceta-analyzer/
 │   ├── requirements/
 │   │   ├── functional.md
 │   │   └── non-functional.md
-│   └── adr/
+│   ├── adr/
+│   └── spikes/                     # investigations behind decisions
 ├── apps/
 │   ├── web/                        # React + Vite
 │   │   ├── src/
@@ -301,6 +302,8 @@ gaceta-analyzer/
 │       └── build.mjs               # esbuild: one zip per handler
 ├── packages/
 │   └── shared/                     # types, constants and API contract
+├── scripts/
+│   └── spikes/                     # throwaway scripts used by docs/spikes/
 ├── infra/
 │   ├── bootstrap/                  # Terraform state bucket and OIDC role
 │   └── main/                       # everything else, including CloudFront and the web bucket
