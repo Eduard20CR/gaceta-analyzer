@@ -1,7 +1,6 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
-import { useRoutes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MAX_FILE_SIZE_BYTES } from '@gaceta/shared';
@@ -9,23 +8,30 @@ import type { CreateJobRequestInput } from '@gaceta/shared';
 
 import { setPassword } from '../../src/api';
 import { UPLOAD_LINK_LIFETIME_MS } from '../../src/lib/upload-link';
-import { routes } from '../../src/routes';
 import { FAKE_UPLOAD_URL, PENDING_JOB } from '../msw/fixtures';
 import { s3Response } from '../msw/handlers';
 import { server } from '../msw/server';
-import { renderWithProviders } from '../render-app';
+import { renderApp } from '../render-app';
 
-/** The app's real route table, so a finished upload opens the real job page. */
-function AppRoutes() {
-  return useRoutes(routes);
-}
-
+/**
+ * Renders the whole app at /jobs/new, so a finished upload really navigates
+ * and the test can check the address.
+ */
 function renderNewJobPage() {
-  const result = renderWithProviders(<AppRoutes />, { route: '/jobs/new' });
+  const result = renderApp('/jobs/new');
   // `applyAccept: false` lets tests choose a non-PDF file, which a user can
   // also do with "All files" in the file dialog.
   const user = userEvent.setup({ applyAccept: false });
   return { ...result, user };
+}
+
+/** Waits until the app shows the page of the job created by the default handler. */
+async function expectJobPageOpened(
+  router: ReturnType<typeof renderApp>['router'],
+) {
+  await waitFor(() => {
+    expect(router.state.location.pathname).toBe(`/jobs/${PENDING_JOB.id}`);
+  });
 }
 
 /** A small fake file. `size` is faked so no test allocates 100 MB. */
@@ -192,7 +198,7 @@ describe('NewJobPage', () => {
 
   it('sends the chosen pages per block', async () => {
     const createRequests = recordCreateJobRequests();
-    const { user } = renderNewJobPage();
+    const { user, router } = renderNewJobPage();
     await fillValidForm(user);
     await user.click(
       screen.getByRole('button', { name: 'Configuración avanzada' }),
@@ -203,7 +209,7 @@ describe('NewJobPage', () => {
 
     await user.click(analyzeButton());
 
-    await screen.findByText(`Análisis ${PENDING_JOB.id}`);
+    await expectJobPageOpened(router);
     expect(createRequests[0]?.pagesPerBlock).toBe(12);
   });
 
@@ -219,7 +225,7 @@ describe('NewJobPage', () => {
         return s3Response(204);
       }),
     );
-    const { user } = renderNewJobPage();
+    const { user, router } = renderNewJobPage();
     await fillValidForm(user);
 
     await user.click(analyzeButton());
@@ -231,31 +237,27 @@ describe('NewJobPage', () => {
     expect(screen.getByLabelText('¿Qué desea buscar?')).toBeDisabled();
 
     finishUpload();
-    expect(
-      await screen.findByText(`Análisis ${PENDING_JOB.id}`),
-    ).toBeInTheDocument();
+    await expectJobPageOpened(router);
   });
 
   it('opens the job page after a successful upload', async () => {
-    const { user } = renderNewJobPage();
+    const { user, router } = renderNewJobPage();
     await fillValidForm(user);
 
     await user.click(analyzeButton());
 
     // The job page shows the id from the address /jobs/<id>.
-    expect(
-      await screen.findByText(`Análisis ${PENDING_JOB.id}`),
-    ).toBeInTheDocument();
+    await expectJobPageOpened(router);
   });
 
   it('leaves the name out when it is empty, so the API uses the file name', async () => {
     const createRequests = recordCreateJobRequests();
-    const { user } = renderNewJobPage();
+    const { user, router } = renderNewJobPage();
     await fillValidForm(user);
 
     await user.click(analyzeButton());
 
-    await screen.findByText(`Análisis ${PENDING_JOB.id}`);
+    await expectJobPageOpened(router);
     expect(createRequests).toEqual([
       {
         query: 'impuestos, aranceles',
@@ -279,7 +281,7 @@ describe('NewJobPage', () => {
         return s3Response(204);
       }),
     );
-    const { user } = renderNewJobPage();
+    const { user, router } = renderNewJobPage();
     await fillValidForm(user);
 
     await user.click(analyzeButton());
@@ -290,9 +292,7 @@ describe('NewJobPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Reintentar subida' }));
 
-    expect(
-      await screen.findByText(`Análisis ${PENDING_JOB.id}`),
-    ).toBeInTheDocument();
+    await expectJobPageOpened(router);
     expect(createRequests).toHaveLength(1);
     expect(uploads.count).toBe(2);
   });
@@ -353,12 +353,12 @@ describe('NewJobPage', () => {
 
   it('creates only one job when "Analizar" is clicked twice', async () => {
     const createRequests = recordCreateJobRequests();
-    const { user } = renderNewJobPage();
+    const { user, router } = renderNewJobPage();
     await fillValidForm(user);
 
     await user.dblClick(analyzeButton());
 
-    await screen.findByText(`Análisis ${PENDING_JOB.id}`);
+    await expectJobPageOpened(router);
     expect(createRequests).toHaveLength(1);
   });
 });
