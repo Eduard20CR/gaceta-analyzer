@@ -4,7 +4,10 @@
 // The analysis itself lives in `lib/analysis.ts`; this handler connects it to
 // S3, DynamoDB and SSM:
 //   upload key → job id → PENDING_UPLOAD to PROCESSING (conditional) →
-//   download the PDF → runAnalysis (with progress) → store results → COMPLETED.
+//   download the PDF → runAnalysis → store results → COMPLETED.
+//
+// No progress is stored while the analysis runs (ADR-0014): the job only
+// changes when it starts and when it ends.
 //
 // Rules this file has to keep:
 // - Idempotent (NFR-REL-02): S3 may deliver the same event twice. Only the
@@ -24,7 +27,7 @@ import type { Job } from '@gaceta/shared';
 import { createAiClient } from '../lib/ai-client';
 import type { AiClient } from '../lib/ai-client';
 import { AllBlocksFailedError, runAnalysis } from '../lib/analysis';
-import type { AnalysisProgress, AnalysisResult } from '../lib/analysis';
+import type { AnalysisResult } from '../lib/analysis';
 import {
   getDeepSeekApiKeyParam,
   getDeepSeekModel,
@@ -35,9 +38,7 @@ import {
   completeJob,
   failJob,
   getJob,
-  setTotals,
   startProcessing,
-  updateProgress,
 } from '../lib/jobs-repository';
 import { createLogger } from '../lib/logger';
 import type { Logger } from '../lib/logger';
@@ -106,7 +107,6 @@ async function analyzeJob(jobId: string, log: Logger): Promise<void> {
 
   const aiClient = await buildAiClient(log);
   const pdfBytes = await getPdfBytes(job.pdfKey);
-  const progressWriter = createProgressWriter(jobId, log);
 
   const result = await runAnalysis(pdfBytes, {
     query: job.query,
@@ -114,12 +114,7 @@ async function analyzeJob(jobId: string, log: Logger): Promise<void> {
     maxConcurrency: getMaxConcurrency(),
     aiClient,
     logger: log,
-    onProgress: progressWriter.write,
   });
-
-  // The last progress writes may still be on their way; wait for them so they
-  // do not land after the job is COMPLETED.
-  await progressWriter.flush();
 
   await saveResults(job, result);
   logMetrics(result, log);
@@ -134,6 +129,8 @@ async function buildAiClient(log: Logger): Promise<AiClient> {
 async function saveResults(job: Job, result: AnalysisResult): Promise<void> {
   await putResults(job.id, { jobId: job.id, findings: result.findings });
   await completeJob(job.id, {
+    pageCount: result.pageCount,
+    totalBlocks: result.totalBlocks,
     findingsCount: result.findingsCount,
     relevantPages: result.relevantPages,
     resultsKey: resultsKey(job.id),
@@ -154,59 +151,6 @@ function logMetrics(result: AnalysisResult, log: Logger): void {
     outputTokens: result.outputTokens,
     durationMs: result.durationMs,
   });
-}
-
-interface ProgressWriter {
-  /** Pass it as `onProgress`. Returns at once: it never makes a block wait. */
-  write: (progress: AnalysisProgress) => void;
-  /** Resolves when every write started so far has finished. Never rejects. */
-  flush: () => Promise<void>;
-}
-
-/**
- * Writes the progress to DynamoDB without slowing the analysis down.
- *
- * Blocks finish in parallel, so if each one wrote on its own, a slow write of
- * "3 blocks done" could land after "4 blocks done" and the progress bar would go
- * back. Instead the writes are chained: each one starts when the previous one
- * ends, so they reach DynamoDB in order. A failed write is only logged, because
- * a progress bar that lags is better than a failed analysis.
- */
-function createProgressWriter(jobId: string, log: Logger): ProgressWriter {
-  let chain: Promise<void> = Promise.resolve();
-
-  function write(progress: AnalysisProgress): void {
-    chain = chain.then(() => writeProgress(jobId, progress, log));
-  }
-
-  function flush(): Promise<void> {
-    return chain;
-  }
-
-  return { write, flush };
-}
-
-async function writeProgress(
-  jobId: string,
-  progress: AnalysisProgress,
-  log: Logger,
-): Promise<void> {
-  try {
-    // The first call (0 blocks done) is the moment the totals are known.
-    if (progress.processedBlocks === 0) {
-      await setTotals(jobId, {
-        pageCount: progress.pageCount,
-        totalBlocks: progress.totalBlocks,
-      });
-    } else {
-      await updateProgress(jobId, progress.processedBlocks);
-    }
-  } catch (error) {
-    log.warn('Could not store the progress, continuing', {
-      processedBlocks: progress.processedBlocks,
-      error,
-    });
-  }
 }
 
 /**

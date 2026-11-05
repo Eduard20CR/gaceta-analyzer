@@ -47,8 +47,6 @@ export class AllBlocksFailedError extends Error {
 export interface AnalysisProgress {
   processedBlocks: number;
   totalBlocks: number;
-  /** Pages of the PDF; the same in every call. analyze-pdf stores it with the totals. */
-  pageCount: number;
 }
 
 export interface AnalysisOptions {
@@ -119,7 +117,6 @@ export async function analyzePages(
   const progress: AnalysisProgress = {
     processedBlocks: 0,
     totalBlocks: blocks.length,
-    pageCount: pages.length,
   };
   await options.onProgress?.({ ...progress });
 

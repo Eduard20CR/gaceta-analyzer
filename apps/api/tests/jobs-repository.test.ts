@@ -20,9 +20,7 @@ import {
   failJob,
   getJob,
   listJobs,
-  setTotals,
   startProcessing,
-  updateProgress,
 } from '../src/lib/jobs-repository';
 import type { NewJob } from '../src/lib/jobs-repository';
 
@@ -154,49 +152,10 @@ describe('updates of an existing job', () => {
     return dynamoMock.commandCalls(UpdateCommand)[0]?.args[0].input;
   }
 
-  it('setTotals stores the counts and starts progress at 0', async () => {
-    await setTotals(ID, { pageCount: 120, totalBlocks: 30 });
-
-    expect(lastUpdateInput()).toEqual({
-      TableName: TABLE,
-      Key: { id: ID },
-      UpdateExpression:
-        'SET #pageCount = :pageCount, #totalBlocks = :totalBlocks, #processedBlocks = :processedBlocks, #updatedAt = :updatedAt',
-      ConditionExpression: 'attribute_exists(id)',
-      ExpressionAttributeNames: {
-        '#pageCount': 'pageCount',
-        '#totalBlocks': 'totalBlocks',
-        '#processedBlocks': 'processedBlocks',
-        '#updatedAt': 'updatedAt',
-      },
-      ExpressionAttributeValues: {
-        ':pageCount': 120,
-        ':totalBlocks': 30,
-        ':processedBlocks': 0,
-        ':updatedAt': NOW,
-      },
-    });
-  });
-
-  it('updateProgress stores processedBlocks', async () => {
-    await updateProgress(ID, 7);
-
-    expect(lastUpdateInput()).toEqual({
-      TableName: TABLE,
-      Key: { id: ID },
-      UpdateExpression:
-        'SET #processedBlocks = :processedBlocks, #updatedAt = :updatedAt',
-      ConditionExpression: 'attribute_exists(id)',
-      ExpressionAttributeNames: {
-        '#processedBlocks': 'processedBlocks',
-        '#updatedAt': 'updatedAt',
-      },
-      ExpressionAttributeValues: { ':processedBlocks': 7, ':updatedAt': NOW },
-    });
-  });
-
   it('completeJob stores COMPLETED with the summary and tokens', async () => {
     await completeJob(ID, {
+      pageCount: 120,
+      totalBlocks: 30,
       findingsCount: 12,
       relevantPages: [3, 14],
       resultsKey: `results/${ID}.json`,
@@ -212,6 +171,8 @@ describe('updates of an existing job', () => {
       ExpressionAttributeNames: { '#status': 'status' },
       ExpressionAttributeValues: {
         ':status': 'COMPLETED',
+        ':pageCount': 120,
+        ':totalBlocks': 30,
         ':findingsCount': 12,
         ':relevantPages': [3, 14],
         ':resultsKey': `results/${ID}.json`,

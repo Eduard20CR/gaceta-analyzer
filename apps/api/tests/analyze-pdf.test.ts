@@ -16,9 +16,7 @@ import {
   completeJob,
   failJob,
   getJob,
-  setTotals,
   startProcessing,
-  updateProgress,
 } from '../src/lib/jobs-repository';
 import { PDF_WITHOUT_TEXT_MESSAGE } from '../src/lib/pdf';
 import { getPdfBytes, putResults } from '../src/lib/storage';
@@ -31,8 +29,6 @@ import type * as StorageModule from '../src/lib/storage';
 vi.mock('../src/lib/jobs-repository', () => ({
   startProcessing: vi.fn(),
   getJob: vi.fn(),
-  setTotals: vi.fn(),
-  updateProgress: vi.fn(),
   completeJob: vi.fn(),
   failJob: vi.fn(),
 }));
@@ -129,8 +125,6 @@ function logEntry(message: string): Record<string, unknown> | undefined {
 beforeEach(async () => {
   vi.mocked(startProcessing).mockReset().mockResolvedValue(true);
   vi.mocked(getJob).mockReset().mockResolvedValue(JOB);
-  vi.mocked(setTotals).mockReset().mockResolvedValue(undefined);
-  vi.mocked(updateProgress).mockReset().mockResolvedValue(undefined);
   vi.mocked(completeJob).mockReset().mockResolvedValue(undefined);
   vi.mocked(failJob).mockReset().mockResolvedValue(undefined);
   vi.mocked(putResults).mockReset().mockResolvedValue(undefined);
@@ -200,6 +194,8 @@ describe('analyze-pdf handler', () => {
       ],
     });
     expect(completeJob).toHaveBeenCalledWith(ID, {
+      pageCount: 3,
+      totalBlocks: 2,
       findingsCount: 1,
       relevantPages: [1],
       resultsKey: `results/${ID}.json`,
@@ -208,37 +204,6 @@ describe('analyze-pdf handler', () => {
       outputTokens: 20,
     });
     expect(failJob).not.toHaveBeenCalled();
-  });
-
-  it('stores the totals once and the progress after each block, before completing', async () => {
-    await handler(s3EventFor(`uploads/${ID}.pdf`));
-
-    expect(setTotals).toHaveBeenCalledTimes(1);
-    expect(setTotals).toHaveBeenCalledWith(ID, {
-      pageCount: 3,
-      totalBlocks: 2,
-    });
-    expect(vi.mocked(updateProgress).mock.calls).toEqual([
-      [ID, 1],
-      [ID, 2],
-    ]);
-
-    // Every progress write finished before the job was marked COMPLETED.
-    const lastProgressOrder = Math.max(
-      ...vi.mocked(updateProgress).mock.invocationCallOrder,
-    );
-    const completeOrder = vi.mocked(completeJob).mock.invocationCallOrder[0];
-    expect(completeOrder).toBeGreaterThan(lastProgressOrder);
-  });
-
-  it('completes the job when a progress write fails', async () => {
-    vi.mocked(updateProgress).mockRejectedValue(new Error('throttled'));
-
-    await handler(s3EventFor(`uploads/${ID}.pdf`));
-
-    expect(completeJob).toHaveBeenCalledTimes(1);
-    expect(failJob).not.toHaveBeenCalled();
-    expect(logEntry('Could not store the progress, continuing')).toBeDefined();
   });
 
   it('completes the job with failedPages when some blocks fail', async () => {

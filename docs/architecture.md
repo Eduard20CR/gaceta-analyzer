@@ -33,7 +33,7 @@ The whole application is served from **a single URL** through CloudFront. Static
                                  │   │   + GSI "by-created-at"  │
                                  │   └──────────────────────────┘
                                  │        ▲
-                                 ▼        │ updates status and progress
+                                 ▼        │ updates status and summary
                      ┌───────────────────────┐   ObjectCreated event    ┌────────────────┐
                      │  S3 "data" bucket     │ ───────────────────────► │  analyze-pdf   │ ──► DeepSeek API
                      │  uploads/{id}.pdf     │                          │                │
@@ -88,7 +88,7 @@ Rules worth knowing:
    1. Extracts the `id` from the key.
    2. Changes the status from `PENDING_UPLOAD` to `PROCESSING` **with a conditional write**. If the status was not `PENDING_UPLOAD`, the event is a duplicate and is ignored.
    3. Downloads the PDF and extracts the text of each page.
-   4. Builds the blocks using the job's `pagesPerBlock` and a fixed overlap of 1 page, and processes them in parallel (at most 5 at a time). After each block, it updates `processedBlocks`.
+   4. Builds the blocks using the job's `pagesPerBlock` and a fixed overlap of 1 page, and processes them in parallel (at most 5 at a time).
    5. Verifies quotes, removes duplicates and sorts.
    6. Stores the findings in `results/{id}.json`.
    7. Changes the status to `COMPLETED` with the summary, or to `FAILED` with an error message.
@@ -124,9 +124,8 @@ The time-based expirations (1 h and 20 min) are computed **at read time** by `ge
 | `fileSize` | Number | `8388608` | Bytes |
 | `pdfKey` | String | `"uploads/3f6c….pdf"` | |
 | `status` | String | `"PROCESSING"` | `PENDING_UPLOAD`, `PROCESSING`, `COMPLETED`, `FAILED` |
-| `pageCount` | Number | `120` | Once known |
-| `totalBlocks` | Number | `30` | Once known |
-| `processedBlocks` | Number | `7` | Progress |
+| `pageCount` | Number | `120` | On completion |
+| `totalBlocks` | Number | `30` | On completion |
 | `failedPages` | List\<Number\> | `[41, 42, 43, 44, 45]` | Pages from blocks that failed |
 | `findingsCount` | Number | `12` | On completion |
 | `relevantPages` | List\<Number\> | `[3, 14, 15, 88]` | Pages with high or medium relevance |
@@ -219,7 +218,7 @@ Errors: `400` invalid input.
 Response `200`:
 ```json
 {
-  "job": { "id": "3f6c…", "status": "COMPLETED", "processedBlocks": 30, "totalBlocks": 30, "...": "..." },
+  "job": { "id": "3f6c…", "status": "COMPLETED", "totalBlocks": 30, "...": "..." },
   "findings": [ { "page": 14, "...": "..." } ],
   "pdfUrl": "https://…"
 }

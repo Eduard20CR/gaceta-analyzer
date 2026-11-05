@@ -44,14 +44,13 @@ export const JOBS_BY_CREATED_AT_INDEX = 'by-created-at';
 /** What `create-job` passes in: everything except the timestamps, which are set here. */
 export type NewJob = Omit<Job, 'createdAt' | 'updatedAt'>;
 
-/** The totals `analyze-pdf` knows once it has read the PDF. */
-export interface JobTotals {
+/**
+ * What `analyze-pdf` stores when an analysis finishes. There is no progress
+ * stored while it runs (ADR-0014), so the page and block counts are stored here.
+ */
+export interface JobCompletion {
   pageCount: number;
   totalBlocks: number;
-}
-
-/** What `analyze-pdf` stores when an analysis finishes. */
-export interface JobCompletion {
   findingsCount: number;
   relevantPages: number[];
   resultsKey: string;
@@ -172,23 +171,6 @@ export async function startProcessing(id: string): Promise<boolean> {
   }
 }
 
-/** Stores the page and block counts once the PDF has been read. Progress starts at 0. */
-export async function setTotals(id: string, totals: JobTotals): Promise<void> {
-  await updateJob(id, {
-    pageCount: totals.pageCount,
-    totalBlocks: totals.totalBlocks,
-    processedBlocks: 0,
-  });
-}
-
-/** Stores how many blocks have been analyzed so far. */
-export async function updateProgress(
-  id: string,
-  processedBlocks: number,
-): Promise<void> {
-  await updateJob(id, { processedBlocks });
-}
-
 /** Marks the job as `COMPLETED` with its summary (FR-03, NFR-COST-05). */
 export async function completeJob(
   id: string,
@@ -196,6 +178,8 @@ export async function completeJob(
 ): Promise<void> {
   await updateJob(id, {
     status: 'COMPLETED',
+    pageCount: completion.pageCount,
+    totalBlocks: completion.totalBlocks,
     findingsCount: completion.findingsCount,
     relevantPages: completion.relevantPages,
     resultsKey: completion.resultsKey,
