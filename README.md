@@ -22,6 +22,28 @@ npm test            # Vitest tests of every workspace that has them
 
 `npm run format` rewrites files with Prettier, and `npm run format:check` only checks them.
 
+## Analyze a PDF locally
+
+The CLI runs the same analysis as the `analyze-pdf` Lambda on a PDF on your computer, so you can try prompts and block sizes without deploying anything. It calls DeepSeek, so it costs a few cents per document.
+
+```sh
+export DEEPSEEK_API_KEY=sk-…         # your DeepSeek key; never commit it
+export DEEPSEEK_MODEL=deepseek-v4-flash   # optional, this is the default
+
+npm run analyze:local -w @gaceta/api -- path/to/gaceta.pdf --query "impuestos, aranceles"
+```
+
+Options:
+
+| Option                | Default | Meaning                                                  |
+| --------------------- | ------- | -------------------------------------------------------- |
+| `--query "<text>"`    | —       | Required. What to look for.                              |
+| `--pages-per-block N` | `5`     | Pages sent to the AI in each call (minimum 2, ADR-0012). |
+| `--concurrency N`     | `5`     | AI calls running at the same time.                       |
+| `--out results.json`  | —       | Also writes the findings in the shape of the S3 results. |
+
+Paths are relative to the folder where you run the command. Progress goes to stderr and the summary and findings to stdout.
+
 ## Repository map
 
 | Path                 | Contents                                                                     |

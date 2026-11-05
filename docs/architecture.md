@@ -299,6 +299,9 @@ gaceta-analyzer/
 │       │       ├── analysis.ts          # whole pipeline: pages → blocks → AI → findings
 │       │       ├── http.ts              # common HTTP responses
 │       │       └── logger.ts
+│       ├── scripts/
+│       │   ├── analyze-local.ts    # local CLI: analyzes a PDF with the real pipeline
+│       │   └── local-cli.ts        # the CLI's argument parsing and output (tested)
 │       ├── tests/
 │       └── build.mjs               # esbuild: one zip per handler
 ├── packages/
