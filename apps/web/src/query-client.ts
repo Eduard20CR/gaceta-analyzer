@@ -2,14 +2,18 @@
 
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 
-import { UnauthorizedError } from './api';
+import { ApiError, UnauthorizedError } from './api';
 
 // A failed request is tried again a couple of times, which hides short network
-// problems. A wrong password is not retried: it will not become right.
+// problems. A wrong password is not retried: it will not become right. Neither
+// is a 404: a job that does not exist will not appear by asking again.
 const MAX_RETRIES = 2;
 
 export function shouldRetry(failureCount: number, error: unknown): boolean {
   if (error instanceof UnauthorizedError) {
+    return false;
+  }
+  if (error instanceof ApiError && error.status === 404) {
     return false;
   }
   return failureCount < MAX_RETRIES;

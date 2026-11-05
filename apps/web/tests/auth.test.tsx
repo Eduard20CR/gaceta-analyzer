@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createJob, getPassword, listJobs, setPassword } from '../src/api';
 import { pathAfterLogin } from '../src/auth';
+import { COMPLETED_JOB } from './msw/fixtures';
 import { server } from './msw/server';
 import { renderApp } from './render-app';
 
@@ -15,6 +16,11 @@ async function logIn(password = PASSWORD) {
   const user = userEvent.setup();
   await user.type(await screen.findByLabelText('Contraseña'), password);
   await user.click(screen.getByRole('button', { name: 'Entrar' }));
+}
+
+/** The job page at /jobs/abc: the default handler returns COMPLETED_JOB for any id. */
+function findJobHeading() {
+  return screen.findByRole('heading', { name: COMPLETED_JOB.name });
 }
 
 function expectLoginPage() {
@@ -38,7 +44,7 @@ describe('route guard', () => {
 
     await logIn();
 
-    expect(await screen.findByText('Análisis abc')).toBeInTheDocument();
+    expect(await findJobHeading()).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/jobs/abc');
   });
 
@@ -68,7 +74,7 @@ describe('401 or 403 from any API call', () => {
         http.get('/api/jobs', () => new HttpResponse(null, { status })),
       );
       const { router, queryClient } = renderApp('/jobs/abc');
-      expect(screen.getByText('Análisis abc')).toBeInTheDocument();
+      expect(await findJobHeading()).toBeInTheDocument();
 
       await expect(
         queryClient.fetchQuery({
@@ -117,7 +123,7 @@ describe('401 or 403 from any API call', () => {
 
     await logIn();
 
-    expect(await screen.findByText('Análisis abc')).toBeInTheDocument();
+    expect(await findJobHeading()).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/jobs/abc');
     expect(getPassword()).toBe(PASSWORD);
   });
