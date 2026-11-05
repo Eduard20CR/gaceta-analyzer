@@ -6,7 +6,7 @@
 #
 #   terraform init -backend-config="bucket=<state_bucket_name output of the bootstrap>"
 #
-# In GitHub Actions it comes from the repository variable TF_STATE_BUCKET (#34).
+# In GitHub Actions it comes from the repository variable TF_STATE_BUCKET (ci.yml and deploy.yml).
 # To only check the files locally, without AWS access:
 #
 #   terraform init -backend=false && terraform validate

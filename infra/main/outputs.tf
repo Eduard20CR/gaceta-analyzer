@@ -47,7 +47,7 @@ output "api_endpoint" {
 }
 
 output "cloudfront_distribution_id" {
-  description = "Id of the CloudFront distribution (the deploy workflow invalidates /index.html on it, #34)."
+  description = "Id of the CloudFront distribution (deploy.yml invalidates /index.html on it)."
   value       = aws_cloudfront_distribution.app.id
 }
 
