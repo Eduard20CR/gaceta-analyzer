@@ -266,3 +266,109 @@ a {
   border-radius: var(--radius);
   margin-bottom: 0.5rem;
 }
+
+/* ---- NewJobPage ---- */
+
+.new-job {
+  max-width: 40rem;
+}
+
+.new-job__form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Only groups the inputs so they can be disabled together; no visible box. */
+.new-job__fields {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-field__label {
+  font-weight: 600;
+}
+
+.form-field__hint {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9375rem;
+}
+
+.form-field input[type='text'],
+.form-field input[type='number'],
+.form-field textarea {
+  font: inherit;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  width: 100%;
+}
+
+.form-field input[type='number'] {
+  max-width: 8rem;
+}
+
+.form-field [aria-invalid='true'] {
+  border-color: var(--color-error-text);
+}
+
+.form-field__error {
+  margin: 0;
+  color: var(--color-error-text);
+  font-weight: 600;
+}
+
+.advanced-settings__toggle {
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* A small arrow that points down when the section is open. */
+.advanced-settings__toggle::before {
+  content: '▸ ';
+}
+
+.advanced-settings__toggle[aria-expanded='true']::before {
+  content: '▾ ';
+}
+
+.advanced-settings__content {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.upload-progress {
+  margin-bottom: 1rem;
+}
+
+.upload-progress__label {
+  margin: 0 0 0.25rem;
+}
+
+.upload-progress__bar {
+  width: 100%;
+  height: 1.25rem;
+}
