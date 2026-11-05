@@ -24,7 +24,7 @@ It is a TypeScript monorepo (npm workspaces): a React + Vite frontend on S3 + Cl
    - is not labeled `blocked` or `manual-step`,
    - has every issue in its **Depends on** section closed, and
    - does not already have an open pull request (look for a PR whose body says `Closes #<n>`).
-   If no issue qualifies, stop and say why instead of picking from a later milestone.
+     If no issue qualifies, stop and say why instead of picking from a later milestone.
 2. **Create a branch** named `<type>/<issue-number>-<short-slug>`, for example `feat/12-ai-client`. Map the issue's label to the type: `type:feature` → `feat`, `type:chore` → `chore`, `type:docs` → `docs`, `type:spike` → `spike`, `type:test` → `test`. Use `fix` for bug fixes.
 3. **Implement the issue**, meeting every acceptance criterion. Add or update tests for the code you change.
 4. **Run lint, typecheck and tests locally** before pushing (`npm run lint`, `npm run typecheck`, `npm test` from the repository root, once those scripts exist). Do not push if any of them fails.
@@ -39,7 +39,7 @@ It is a TypeScript monorepo (npm workspaces): a React + Vite frontend on S3 + Cl
 - Code must be readable by a junior developer:
   - Short functions with descriptive names.
   - No clever one-liners; prefer a few clear lines over a dense expression.
-  - Comments where the intent is not obvious (the *why*, not the *what*).
+  - Comments where the intent is not obvious (the _why_, not the _what_).
 - Types and constants shared by the web app and the API live in `packages/shared`.
 - All DynamoDB access goes through `apps/api/src/lib/jobs-repository.ts`, all S3 access through `lib/storage.ts`, all AI calls through `lib/ai-client.ts`, and all PDF reading through `lib/pdf.ts`.
 - Vitest tests for the logic in `apps/api/src/lib/` and `packages/shared`. Mock AWS and DeepSeek; tests never call real services.
