@@ -2,11 +2,11 @@
 
 This folder creates the few AWS resources that must exist **before** GitHub Actions can deploy anything (ADR-0011). It also uses the account's existing GitHub OIDC provider, which it does not create (see below).
 
-| Resource          | Name                                   | Why                                                                                                                 |
-| ----------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| S3 bucket         | `gaceta-analyzer-tfstate-<account id>` | Stores the Terraform state of `infra/main` (versioned, encrypted, never public).                                    |
-| IAM role          | `gaceta-analyzer-github-deploy`        | Assumed by the workflows of this repository: on the `main` branch (deploy) and on pull requests (`terraform plan`). |
-| IAM policy        | `gaceta-analyzer-lambda-boundary`      | Permissions boundary: the most any Lambda role created by `infra/main` can ever do.                                 |
+| Resource   | Name                                   | Why                                                                                                                 |
+| ---------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| S3 bucket  | `gaceta-analyzer-tfstate-<account id>` | Stores the Terraform state of `infra/main` (versioned, encrypted, never public).                                    |
+| IAM role   | `gaceta-analyzer-github-deploy`        | Assumed by the workflows of this repository: on the `main` branch (deploy) and on pull requests (`terraform plan`). |
+| IAM policy | `gaceta-analyzer-lambda-boundary`      | Permissions boundary: the most any Lambda role created by `infra/main` can ever do.                                 |
 
 ## The GitHub OIDC provider is shared
 
