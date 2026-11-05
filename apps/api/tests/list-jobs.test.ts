@@ -110,8 +110,11 @@ describe('list-jobs handler: GET /api/jobs', () => {
   });
 
   it('returns only the JobSummary fields', async () => {
+    // Built once: makeJob uses the current time, so a second call could get a
+    // createdAt one millisecond later and make the comparison below fail.
+    const job = makeJob('a');
     vi.mocked(listJobs).mockResolvedValue({
-      jobs: [makeJob('a')],
+      jobs: [job],
       nextCursor: null,
     });
 
@@ -129,7 +132,7 @@ describe('list-jobs handler: GET /api/jobs', () => {
       id: 'a',
       name: 'Gaceta a',
       status: 'COMPLETED',
-      createdAt: makeJob('a').createdAt,
+      createdAt: job.createdAt,
       findingsCount: 3,
     });
   });
