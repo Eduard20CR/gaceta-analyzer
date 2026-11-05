@@ -1,8 +1,11 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    // The web app runs in the browser, so it also needs the DOM types.
-    "lib": ["ES2024", "DOM", "DOM.Iterable"]
-  },
-  "include": ["src"]
+  // The web app has two kinds of TypeScript files with different globals:
+  // - tsconfig.app.json: the app in src/, which runs in the browser.
+  // - tsconfig.node.json: vite.config.ts, which runs in Node.js.
+  // This file only points at both, so editors and ESLint find the right one.
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
 }

@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // `tsc -b` (npm run typecheck) keeps its incremental cache here, outside the repo.
+    "tsBuildInfoFile": "../../node_modules/.cache/tsc/web-node.tsbuildinfo",
+    // vite.config.ts runs in Node.js.
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts"]
+}
