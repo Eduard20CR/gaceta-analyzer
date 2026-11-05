@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { useRoutes } from 'react-router';
@@ -10,9 +10,9 @@ import { setPassword } from '../../src/api';
 import { formatDateTime } from '../../src/lib/format-date';
 import { routes } from '../../src/routes';
 import { server } from '../msw/server';
-import { renderWithProviders } from '../render-app';
+import { renderApp, renderWithProviders } from '../render-app';
 
-/** The app's real route table, so clicking a job opens the real job page. */
+/** The app's real route table (layout, login guard and pages). */
 function AppRoutes() {
   return useRoutes(routes);
 }
@@ -163,13 +163,15 @@ describe('JobListPage', () => {
   it('opens the job page when a job is clicked', async () => {
     const job = makeJob(1);
     serveJobPages([{ jobs: [job], nextCursor: null }]);
-    renderJobList();
+    // The whole app, so the test can check the address after the click.
+    const { router } = renderApp('/');
     const user = userEvent.setup();
 
     await user.click(await screen.findByRole('link', { name: /Análisis 1/ }));
 
-    // The job page shows the id from the address.
-    expect(await screen.findByText(`Análisis ${job.id}`)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe(`/jobs/${job.id}`);
+    });
   });
 
   it('shows an error with "Reintentar", which loads the list again', async () => {
