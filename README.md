@@ -69,4 +69,7 @@ Some of these folders do not exist yet; they are added by the milestones in [`do
 
 ## Deployment
 
-To be completed in M3 (infrastructure), together with the manual setup steps.
+Everything in AWS is created by Terraform, in region `us-east-1` (ADR-0011):
+
+- [`infra/bootstrap/`](infra/bootstrap/README.md) is applied once, by hand. It creates the Terraform state bucket and the role GitHub Actions uses. **Its README has the manual setup steps**: applying the bootstrap, the GitHub variables, the SSM secrets and the DeepSeek spending limit.
+- `infra/main/` holds the rest of the app and is deployed by GitHub Actions (added in milestone M3).
