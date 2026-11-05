@@ -63,6 +63,8 @@ The whole application is served from **a single URL** through CloudFront. Static
 | SSM Parameter Store | `SecureString` | App password and DeepSeek API key |
 | DeepSeek | OpenAI-compatible API | Analysis of each text block |
 
+**AWS resource names.** Names in this document (`jobs`, `web`, `data`, `create-job`, …) are logical names. In AWS, every resource is named with the prefix `gaceta-analyzer-` (for example, the table `gaceta-analyzer-jobs` and the Lambda `gaceta-analyzer-create-job`; bucket names also get a unique suffix). The GitHub deploy role created by `infra/bootstrap` may only manage resources with that prefix, and every Lambda role must use the permissions boundary that the bootstrap creates (see `infra/bootstrap/README.md`).
+
 ## CloudFront configuration
 
 | Behavior | Origin | Cache | Notes |
