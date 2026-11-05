@@ -241,3 +241,28 @@ a {
   color: #8a1c1c;
   background: #fdecec;
 }
+
+/* ---- LoginPage ---- */
+
+.login {
+  max-width: 24rem;
+}
+
+.login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.login__label {
+  font-weight: 600;
+}
+
+.login__input {
+  font: inherit;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  margin-bottom: 0.5rem;
+}
