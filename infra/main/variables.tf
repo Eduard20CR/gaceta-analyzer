@@ -10,12 +10,15 @@
 #
 # It is not a secret, but it is personal, so it is not written in the repository.
 # - In GitHub Actions: the repository variable BUDGET_ALERT_EMAIL, passed to
-#   Terraform as the environment variable TF_VAR_budget_alert_email (#34).
+#   Terraform as the environment variable TF_VAR_budget_alert_email (ci.yml and deploy.yml).
 # - Locally: `-var 'budget_alert_email=…'`, or a `terraform.tfvars` file in this
 #   folder (git-ignored; copy terraform.tfvars.example).
 variable "budget_alert_email" {
   description = "Email address that receives the monthly AWS budget alerts."
   type        = string
+  # Not a secret, but personal: `sensitive` hides it in `terraform plan` output,
+  # which ci.yml writes to the PR's job summary.
+  sensitive = true
 
   validation {
     # A light check that catches an empty value or a typo such as a missing "@".

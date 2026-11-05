@@ -1,6 +1,8 @@
 # Runs on every pull request to main (NFR-DEP-04, NFR-MAINT-01, NFR-MAINT-05).
 # Any failing step fails the workflow, so a PR with lint, format, type or test
-# errors shows a red check. `terraform plan` is added in M3 (#34).
+# errors shows a red check. On pull requests, a second job shows what
+# `terraform plan` would change in AWS, so the owner reviews it before merging
+# (ADR-0011). The deploy itself is in deploy.yml.
 name: CI
 
 on:
@@ -9,8 +11,8 @@ on:
   push:
     branches: [main]
 
-# The workflow only needs to read the code. Jobs that need more (for example,
-# the OIDC deploy in M3) must ask for it explicitly.
+# The workflow only needs to read the code. Jobs that need more (the
+# terraform-plan job below) ask for it explicitly.
 permissions:
   contents: read
 
@@ -18,6 +20,11 @@ permissions:
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  # Same Terraform version in ci.yml and deploy.yml, so a plan that passes on
+  # the PR behaves the same when deploy.yml applies it.
+  TERRAFORM_VERSION: 1.17.1
 
 jobs:
   checks:
@@ -53,3 +60,92 @@ jobs:
       # so a bundling problem fails the PR instead of the deploy.
       - name: Build the Lambda zips
         run: npm run build:api
+
+  terraform-plan:
+    name: Terraform plan
+    # Only pull requests: on main, deploy.yml applies the changes instead.
+    if: github.event_name == 'pull_request'
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      # Lets the job ask GitHub for an OIDC token, which AWS trades for
+      # temporary credentials of the deploy role (NFR-SEC-09). No AWS access
+      # keys are stored anywhere.
+      id-token: write
+      contents: read
+    defaults:
+      run:
+        working-directory: infra/main
+    env:
+      # The only input variable of infra/main (variables.tf). It is personal, so
+      # it comes from a repository variable instead of the code.
+      TF_VAR_budget_alert_email: ${{ vars.BUDGET_ALERT_EMAIL }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js from .nvmrc
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: .
+
+      # Terraform hashes each Lambda zip to know whether the code changed
+      # (lambdas.tf), so the zips must exist before `plan`.
+      - name: Build the Lambda zips
+        run: npm run build:api
+        working-directory: .
+
+      - name: Get AWS credentials for the deploy role
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          # Without the wrapper, `terraform` prints plain output that the
+          # summary step below can read as is.
+          terraform_wrapper: false
+
+      - name: Check Terraform formatting
+        # Both folders, so a badly formatted bootstrap file also fails the PR.
+        run: terraform fmt -check -recursive ..
+
+      - name: Terraform init
+        run: terraform init -input=false -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        # -lock=false: a plan only reads the state, it never writes it. Without
+        # a lock, a plan cancelled by a newer push (see `concurrency` above)
+        # cannot leave a stale lock that would block the next deploy.
+        run: terraform plan -input=false -lock=false -no-color -out=pr.tfplan
+
+      - name: Add the plan to the job summary
+        # The summary is the page shown when you open this job in the PR's
+        # Checks tab. The full plan is folded under a "details" toggle.
+        run: |
+          terraform show -no-color pr.tfplan > plan.txt
+          {
+            echo "## Terraform plan"
+            echo
+            grep -E '^(Plan:|No changes\.)' plan.txt || echo "See the full plan below."
+            echo
+            echo "<details><summary>Full plan</summary>"
+            echo
+            echo '```'
+            cat plan.txt
+            echo '```'
+            echo
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"

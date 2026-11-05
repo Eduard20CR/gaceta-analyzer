@@ -1,0 +1,151 @@
+# Deploys the whole app on every merge to main (NFR-DEP-05, ADR-0011):
+#
+#   1. checks (lint, format, typecheck, tests), so broken code never reaches AWS;
+#   2. builds the Lambda zips;
+#   3. `terraform apply` in infra/main (Lambdas, API, buckets, CloudFront, …);
+#   4. builds the web app and uploads it to the web bucket;
+#   5. tells CloudFront to forget its cached copy of /index.html.
+#
+# The changes it applies are the ones shown by the "Terraform plan" job of the
+# pull request (ci.yml). Review that plan before merging.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # Lets the owner run a deploy again from the Actions tab, for example after a
+  # failure caused by AWS and not by the code.
+  workflow_dispatch:
+
+permissions:
+  # Lets the job ask GitHub for an OIDC token, which AWS trades for temporary
+  # credentials of the deploy role (NFR-SEC-09). No AWS access keys are stored
+  # anywhere.
+  id-token: write
+  contents: read
+
+# Only one deploy at a time. If two merges happen close together, the second
+# deploy waits for the first one instead of running `terraform apply` at the
+# same time. A running deploy is never cancelled halfway.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  # Same Terraform version as ci.yml.
+  TERRAFORM_VERSION: 1.17.1
+  # The only input variable of infra/main (variables.tf). It is personal, so it
+  # comes from a repository variable instead of the code.
+  TF_VAR_budget_alert_email: ${{ vars.BUDGET_ALERT_EMAIL }}
+
+jobs:
+  deploy:
+    name: Deploy to AWS
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js from .nvmrc
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 1: the same checks as ci.yml. A failure stops the deploy here,
+      # before anything changes in AWS.
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      # Step 2: one zip per Lambda in apps/api/dist/. Terraform uploads them.
+      - name: Build the Lambda zips
+        run: npm run build:api
+
+      # Step 3: infrastructure and Lambda code.
+      - name: Get AWS credentials for the deploy role
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          # Without the wrapper, `terraform output -raw` prints only the value,
+          # so it can be saved in a variable below.
+          terraform_wrapper: false
+
+      - name: Terraform init
+        working-directory: infra/main
+        run: terraform init -input=false -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
+
+      - name: Terraform apply
+        working-directory: infra/main
+        # -lock-timeout: if a PR plan or a local run holds the state lock, wait
+        # a few minutes for it instead of failing at once.
+        run: terraform apply -input=false -auto-approve -lock-timeout=5m
+
+      - name: Read the web bucket and CloudFront ids
+        id: outputs
+        working-directory: infra/main
+        run: |
+          echo "web_bucket=$(terraform output -raw web_bucket_name)" >> "$GITHUB_OUTPUT"
+          echo "distribution_id=$(terraform output -raw cloudfront_distribution_id)" >> "$GITHUB_OUTPUT"
+          echo "app_url=$(terraform output -raw app_url)" >> "$GITHUB_OUTPUT"
+
+      # Step 4: the web app. Vite writes index.html plus the files in assets/,
+      # whose names contain a hash of their content (for example
+      # assets/index-3f9a1c.js). A changed file gets a new name, so browsers
+      # may keep assets/ files forever, while index.html (which lists the
+      # current names) must always be checked again (docs/architecture.md →
+      # "CloudFront configuration").
+      - name: Build the web app
+        run: npm run build -w @gaceta/web
+
+      - name: Upload the new assets
+        # Only adds files. The old ones stay until the new index.html is live,
+        # so a page loaded just before the deploy can still fetch them.
+        run: >-
+          aws s3 sync apps/web/dist/assets "s3://${{ steps.outputs.outputs.web_bucket }}/assets"
+          --cache-control "public, max-age=31536000, immutable"
+
+      - name: Upload index.html and the other top-level files
+        # --delete removes top-level files that no longer exist in the build.
+        # The assets/ folder is excluded here, so it is not touched.
+        run: >-
+          aws s3 sync apps/web/dist "s3://${{ steps.outputs.outputs.web_bucket }}"
+          --exclude "assets/*"
+          --cache-control "no-cache"
+          --delete
+
+      - name: Remove assets that the new index.html no longer uses
+        run: >-
+          aws s3 sync apps/web/dist/assets "s3://${{ steps.outputs.outputs.web_bucket }}/assets"
+          --cache-control "public, max-age=31536000, immutable"
+          --delete
+
+      # Step 5: CloudFront keeps a copy of each file near the user. Every app
+      # address (/, /jobs/…) is served from /index.html, so forgetting that one
+      # file is enough: the assets/ files have new names and are fetched fresh.
+      - name: Invalidate /index.html in CloudFront
+        run: >-
+          aws cloudfront create-invalidation
+          --distribution-id "${{ steps.outputs.outputs.distribution_id }}"
+          --paths "/index.html"
+
+      - name: Add the app address to the job summary
+        run: echo "Deployed to ${{ steps.outputs.outputs.app_url }}" >> "$GITHUB_STEP_SUMMARY"

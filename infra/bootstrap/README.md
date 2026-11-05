@@ -72,7 +72,7 @@ state_bucket_name               = "gaceta-analyzer-tfstate-123456789012"
 
 You can show them again at any time with `terraform output`.
 
-The defaults fit this repository. If the repository is renamed or moved, pass the new name: `terraform apply -var 'github_repository=owner/name'`.
+The defaults fit this repository. If the repository is renamed or moved, pass the new name and the new OIDC subject prefix: `terraform apply -var 'github_repository=owner/name' -var 'github_oidc_subject_prefix=…'`. GitHub shows the prefix in the `sub_claim_prefix` field of `gh api repos/<owner>/<name>/actions/oidc/customization/sub`. This repository uses the "immutable subject" format (`repo:Eduard20CR@41557299/gaceta-analyzer@1446229865`), so a role that only trusts `repo:Eduard20CR/gaceta-analyzer:…` is refused with `Not authorized to perform sts:AssumeRoleWithWebIdentity`.
 
 ## 2. Save the outputs in GitHub (issue #27)
 

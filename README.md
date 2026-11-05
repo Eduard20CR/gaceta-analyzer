@@ -56,15 +56,15 @@ The dev server forwards every `/api` request to the deployed API Gateway URL in 
 
 ## Repository map
 
-| Path                 | Contents                                                                     |
-| -------------------- | ---------------------------------------------------------------------------- |
-| `apps/web/`          | React + Vite frontend (the UI, in Spanish)                                   |
-| `apps/api/`          | The five Lambda handlers, their shared `lib/` modules, tests and `build.mjs` |
-| `packages/shared/`   | Types, constants and the API contract shared by the web app and the API      |
-| `infra/`             | Terraform: `bootstrap/` (state bucket and OIDC role) and `main/`             |
-| `docs/`              | Requirements, architecture and ADRs                                          |
-| `.claude/`           | `CLAUDE.md`, the rules every Claude session follows in this repository       |
-| `.github/workflows/` | `ci.yml` (checks on every pull request) and `deploy.yml`                     |
+| Path                 | Contents                                                                      |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `apps/web/`          | React + Vite frontend (the UI, in Spanish)                                    |
+| `apps/api/`          | The five Lambda handlers, their shared `lib/` modules, tests and `build.mjs`  |
+| `packages/shared/`   | Types, constants and the API contract shared by the web app and the API       |
+| `infra/`             | Terraform: `bootstrap/` (state bucket and OIDC role) and `main/`              |
+| `docs/`              | Requirements, architecture and ADRs                                           |
+| `.claude/`           | `CLAUDE.md`, the rules every Claude session follows in this repository        |
+| `.github/workflows/` | `ci.yml` (checks and `terraform plan` on every pull request) and `deploy.yml` |
 
 Some of these folders do not exist yet; they are added by the milestones in [`docs/architecture.md`](docs/architecture.md#repository-structure).
 
@@ -73,7 +73,7 @@ Some of these folders do not exist yet; they are added by the milestones in [`do
 Everything in AWS is created by Terraform, in region `us-east-1` (ADR-0011):
 
 - [`infra/bootstrap/`](infra/bootstrap/README.md) is applied once, by hand. It creates the Terraform state bucket and the role GitHub Actions uses. **Its README has the manual setup steps**: applying the bootstrap, the GitHub variables, the SSM secrets and the DeepSeek spending limit.
-- `infra/main/` holds the rest of the app and is deployed by GitHub Actions (added in milestone M3). Its state lives in the bootstrap's state bucket, whose name is passed at init time. To only check the files locally, without AWS credentials:
+- `infra/main/` holds the rest of the app and is deployed by GitHub Actions (see [How a deploy works](#how-a-deploy-works)). Its state lives in the bootstrap's state bucket, whose name is passed at init time. To only check the files locally, without AWS credentials:
 
   ```sh
   cd infra/main
@@ -90,3 +90,14 @@ Everything in AWS is created by Terraform, in region `us-east-1` (ADR-0011):
 `terraform validate` does not need it; `plan` and `apply` do.
 
 `plan` and `apply` also need the five Lambda zips, because Terraform hashes each one to know whether the code changed. Build them first, from the repository root, with `npm run build:api` (it writes `apps/api/dist/<handler>.zip`).
+
+### How a deploy works
+
+Nothing is deployed by hand. Two GitHub Actions workflows do it, and both get temporary AWS credentials through OIDC (no AWS access keys exist anywhere):
+
+1. **On every pull request**, [`ci.yml`](.github/workflows/ci.yml) runs lint, format, typecheck and tests, and then the **Terraform plan** job: it builds the Lambda zips and runs `terraform fmt -check`, `validate` and `plan` for `infra/main`. To read the plan, open the pull request → **Checks** → **CI** → **Terraform plan**: the summary shows the `Plan: X to add, Y to change, Z to destroy` line, and the full plan is under **Full plan**. Review it before merging (ADR-0011); anything under "destroy" deserves a second look.
+2. **On every merge to `main`**, [`deploy.yml`](.github/workflows/deploy.yml) runs the same checks again, builds the Lambda zips, runs `terraform apply`, builds the web app, uploads it to the `web` bucket (`assets/*` with `Cache-Control: public, max-age=31536000, immutable`, `index.html` with `no-cache`, stale files deleted) and invalidates `/index.html` in CloudFront. Only one deploy runs at a time: a second merge waits for the first deploy to finish.
+
+To see a deploy, open the repository → **Actions** → **Deploy**. The summary of a finished run shows the app address. A failed run can be started again with **Re-run jobs**, or a new one with **Run workflow** (useful when the failure came from AWS, not from the code).
+
+Both workflows need the repository variables `AWS_DEPLOY_ROLE_ARN`, `TF_STATE_BUCKET` and `BUDGET_ALERT_EMAIL` ([`infra/bootstrap/README.md`](infra/bootstrap/README.md), step 2).
