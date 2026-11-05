@@ -43,6 +43,7 @@ It is a TypeScript monorepo (npm workspaces): a React + Vite frontend on S3 + Cl
 - Types and constants shared by the web app and the API live in `packages/shared`.
 - All DynamoDB access goes through `apps/api/src/lib/jobs-repository.ts`, all S3 access through `lib/storage.ts`, all AI calls through `lib/ai-client.ts`, and all PDF reading through `lib/pdf.ts`.
 - Vitest tests for the logic in `apps/api/src/lib/` and `packages/shared`. Mock AWS and DeepSeek; tests never call real services.
+- Vitest tests for the web app in `apps/web/tests/` with React Testing Library, user-event and MSW (ADR-0013). Query by role and visible Spanish text; mock the API with MSW, never the API client itself; no snapshot tests.
 
 ## Security and logging
 
