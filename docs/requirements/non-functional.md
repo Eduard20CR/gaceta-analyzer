@@ -65,7 +65,7 @@ Each requirement has an ID (`NFR-<AREA>-XX`) and a verifiable criterion.
 | NFR-MAINT-01 | All code in **TypeScript** with `strict: true`. | `tsc --noEmit` in CI. |
 | NFR-MAINT-02 | Code, comments and documentation in **English**. Only user-facing UI text is in Spanish. | Code review. |
 | NFR-MAINT-03 | A junior developer must be able to read the code: short functions with descriptive names, no clever one-liners, comments where the intent is not obvious. | Code review. |
-| NFR-MAINT-04 | **Vitest** tests for the analysis logic: block building, quote verification, deduplication, AI response validation and the authorizer. | `npm test` in CI. |
+| NFR-MAINT-04 | **Vitest** tests for the analysis logic (block building, quote verification, deduplication, AI response validation and the authorizer) and for the **web app** (API client, stored password, form validation, route guard, polling and results), written with React Testing Library and MSW (see ADR-0013). No test calls real services. | `npm test` in CI. |
 | NFR-MAINT-05 | ESLint and Prettier configured; CI fails on errors. | CI. |
 | NFR-MAINT-06 | Types shared between the web app and the API live in `packages/shared`. | Repository structure. |
 | NFR-MAINT-07 | Every relevant architecture decision has an ADR in `docs/adr/`. | Review. |
