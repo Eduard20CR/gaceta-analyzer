@@ -272,10 +272,11 @@ gaceta-analyzer/
 │   └── adr/
 ├── apps/
 │   ├── web/                        # React + Vite
-│   │   └── src/
-│   │       ├── pages/              # LoginPage, JobListPage, NewJobPage, JobDetailPage
-│   │       ├── components/
-│   │       └── api/                # typed HTTP client
+│   │   ├── src/
+│   │   │   ├── pages/              # LoginPage, JobListPage, NewJobPage, JobDetailPage
+│   │   │   ├── components/
+│   │   │   └── api/                # typed HTTP client
+│   │   └── tests/                  # Vitest + React Testing Library + MSW (ADR-0013)
 │   └── api/
 │       ├── src/
 │       │   ├── handlers/
