@@ -1,7 +1,7 @@
 # S3 buckets (docs/architecture.md → "S3 buckets", ADR-0004, ADR-0008).
 #
 # - `data`: uploaded PDFs (`uploads/`) and results (`results/`).
-# - `web`: the built frontend, served by CloudFront (#32).
+# - `web`: the built frontend, served by CloudFront (cloudfront.tf).
 #
 # Two buckets keep permissions and lifecycle rules separate: the deploy pipeline
 # can overwrite the `web` bucket without any access to user data.
@@ -93,8 +93,8 @@ data "aws_iam_policy_document" "data_bucket" {
   }
 }
 
-# The CORS rules of this bucket need the CloudFront domain, so they are added
-# with the distribution (#32). The S3 event that starts analyze-pdf is in
+# The CORS rules of this bucket need the CloudFront domain, so they are in
+# cloudfront.tf. The S3 event that starts analyze-pdf is in
 # lambdas.tf.
 
 # ---------------------------------------------------------------------------
@@ -108,7 +108,7 @@ resource "aws_s3_bucket" "web" {
 }
 
 # Private: only CloudFront may read it, through Origin Access Control. That
-# bucket policy is added with the distribution (#32) (NFR-SEC-04).
+# bucket policy is in cloudfront.tf (NFR-SEC-04).
 resource "aws_s3_bucket_public_access_block" "web" {
   bucket = aws_s3_bucket.web.id
 

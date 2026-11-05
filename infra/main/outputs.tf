@@ -45,3 +45,13 @@ output "api_endpoint" {
   description = "URL of the HTTP API (origin of the /api/* behavior in CloudFront, #32, and VITE_DEV_API_PROXY_TARGET for local development)."
   value       = aws_apigatewayv2_api.http.api_endpoint
 }
+
+output "cloudfront_distribution_id" {
+  description = "Id of the CloudFront distribution (the deploy workflow invalidates /index.html on it, #34)."
+  value       = aws_cloudfront_distribution.app.id
+}
+
+output "app_url" {
+  description = "Address of the app: open it in the browser."
+  value       = "https://${aws_cloudfront_distribution.app.domain_name}"
+}

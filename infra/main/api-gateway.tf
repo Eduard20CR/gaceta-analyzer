@@ -1,6 +1,6 @@
 # The HTTP API in front of the Lambdas (docs/architecture.md → "API contract").
 #
-# Requests arrive from CloudFront (#32), which forwards /api/* as is, so the
+# Requests arrive from CloudFront (cloudfront.tf), which forwards /api/* as is, so the
 # routes below include the /api prefix (ADR-0008). The web app and the API share
 # the CloudFront domain, so the API needs no CORS configuration (NFR-SEC-05).
 #
