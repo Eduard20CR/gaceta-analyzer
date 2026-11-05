@@ -1,0 +1,14 @@
+# Generated files
+node_modules/
+dist/
+build/
+coverage/
+package-lock.json
+
+# Terraform files are formatted with `terraform fmt`, not Prettier.
+*.tf
+*.tfvars
+
+# The docs are hand-formatted Markdown (wide tables, aligned trees);
+# Prettier would reflow them, so they are left as they are.
+docs/
