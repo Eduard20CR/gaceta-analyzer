@@ -1,13 +1,19 @@
 import type { Finding } from '@gaceta/shared';
 
+import { Button } from './Button';
 import { RELEVANCE_LABELS, VERIFICATION_LABELS } from './relevance-labels';
 
 interface FindingCardProps {
   finding: Finding;
+  /**
+   * When given, the card shows a "Ver página N" button that calls it, so the
+   * PDF viewer can jump to the page of the finding (FR-06).
+   */
+  onShowPage?: ((page: number) => void) | undefined;
 }
 
 /** One finding: page, topic, relevance, the quote, why it matters, and its check. */
-export function FindingCard({ finding }: FindingCardProps) {
+export function FindingCard({ finding, onShowPage }: FindingCardProps) {
   const isNotFound = finding.verification === 'not_found';
 
   return (
@@ -37,6 +43,16 @@ export function FindingCard({ finding }: FindingCardProps) {
         <p className="finding-card__verification">
           {VERIFICATION_LABELS[finding.verification]}
         </p>
+      )}
+
+      {onShowPage !== undefined && (
+        <Button
+          variant="secondary"
+          className="finding-card__show-page"
+          onClick={() => onShowPage(finding.page)}
+        >
+          Ver página {finding.page}
+        </Button>
       )}
     </article>
   );

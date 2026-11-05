@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { Finding } from '@gaceta/shared';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { FindingCard } from '../../src/components/FindingCard';
 
@@ -57,5 +58,24 @@ describe('FindingCard', () => {
     expect(screen.getByRole('note')).toHaveTextContent(
       'La cita no se encontró en el documento',
     );
+  });
+
+  it('has no "Ver página" button without a viewer', () => {
+    render(<FindingCard finding={FINDING} />);
+
+    expect(
+      screen.queryByRole('button', { name: 'Ver página 14' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('"Ver página N" asks to show the page of the finding', async () => {
+    const onShowPage = vi.fn();
+    render(<FindingCard finding={FINDING} onShowPage={onShowPage} />);
+
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Ver página 14' }));
+
+    expect(onShowPage).toHaveBeenCalledWith(14);
   });
 });
