@@ -3,7 +3,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import type { ReactElement } from 'react';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, createMemoryRouter } from 'react-router';
+
+import { App, createAppQueryClient } from '../src/app';
+import { routes } from '../src/routes';
 
 interface RenderOptions {
   /** Address the router starts at, for example "/jobs/abc". Default "/". */
@@ -36,4 +39,21 @@ export function renderWithProviders(
   );
 
   return { ...result, queryClient };
+}
+
+/**
+ * Renders the whole app (real routes, real query client wiring from
+ * src/app.tsx) starting at `route`. Use it when a test needs what main.tsx
+ * sets up, for example the redirect to the login page on a 401/403.
+ *
+ * Returns the router and the query client so a test can check the current
+ * address or trigger a request.
+ */
+export function renderApp(route = '/') {
+  const router = createMemoryRouter(routes, { initialEntries: [route] });
+  const queryClient = createAppQueryClient(router);
+
+  const result = render(<App router={router} queryClient={queryClient} />);
+
+  return { ...result, router, queryClient };
 }

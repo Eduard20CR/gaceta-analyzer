@@ -1,7 +1,9 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRoutes } from 'react-router';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import { setPassword } from '../../src/api';
 
 import { Layout } from '../../src/components/Layout';
 import { routes } from '../../src/routes';
@@ -13,6 +15,11 @@ function AppRoutes() {
 }
 
 describe('Layout', () => {
+  // Every page except /login needs a stored password (RequireAuth).
+  beforeEach(() => {
+    setPassword('clave-correcta');
+  });
+
   it('renders the header links and its children', () => {
     renderWithProviders(
       <Layout>

@@ -1,6 +1,6 @@
 // Shared TanStack Query settings (ADR-0008).
 
-import { QueryClient } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 
 import { UnauthorizedError } from './api';
 
@@ -15,8 +15,28 @@ export function shouldRetry(failureCount: number, error: unknown): boolean {
   return failureCount < MAX_RETRIES;
 }
 
-export function createQueryClient(): QueryClient {
+interface QueryClientOptions {
+  /**
+   * Called when any query or mutation fails because the password is missing
+   * or wrong (401/403). The app uses it to log out and show the login page (FR-01).
+   */
+  onUnauthorized: () => void;
+}
+
+export function createQueryClient({
+  onUnauthorized,
+}: QueryClientOptions): QueryClient {
+  // The caches see the error of every query and mutation of the app, so pages
+  // do not have to handle a 401/403 one by one.
+  function handleError(error: unknown): void {
+    if (error instanceof UnauthorizedError) {
+      onUnauthorized();
+    }
+  }
+
   return new QueryClient({
+    queryCache: new QueryCache({ onError: handleError }),
+    mutationCache: new MutationCache({ onError: handleError }),
     defaultOptions: {
       queries: { retry: shouldRetry },
     },

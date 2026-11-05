@@ -1,15 +1,15 @@
 // Entry point of the web app: mounts React into <div id="root"> of index.html.
 
-import { QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { RouterProvider } from 'react-router/dom';
+import { createBrowserRouter } from 'react-router';
 
-import { createQueryClient } from './query-client';
-import { router } from './routes';
+import { App, createAppQueryClient } from './app';
+import { routes } from './routes';
 import './styles.css';
 
-const queryClient = createQueryClient();
+const router = createBrowserRouter(routes);
+const queryClient = createAppQueryClient(router);
 
 const rootElement = document.getElementById('root');
 if (rootElement === null) {
@@ -18,8 +18,6 @@ if (rootElement === null) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <App router={router} queryClient={queryClient} />
   </StrictMode>,
 );

@@ -1,6 +1,8 @@
 import { screen } from '@testing-library/react';
 import { useRoutes } from 'react-router';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import { setPassword } from '../src/api';
 
 import { routes } from '../src/routes';
 import { renderWithProviders } from './render-app';
@@ -11,6 +13,11 @@ function AppRoutes() {
 }
 
 describe('routes', () => {
+  // Every page except /login needs a stored password (RequireAuth).
+  beforeEach(() => {
+    setPassword('clave-correcta');
+  });
+
   it.each([
     ['/login', 'Iniciar sesión'],
     ['/', 'Análisis'],

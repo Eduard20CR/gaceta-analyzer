@@ -8,8 +8,8 @@ interface LayoutProps {
   /** The page. */
   children: ReactNode;
   /**
-   * Extra controls at the right of the header. The login work (#37) puts the
-   * "Cerrar sesión" button here.
+   * Extra controls at the right of the header. routes.tsx puts the
+   * "Cerrar sesión" button here on every page except the login page.
    */
   headerActions?: ReactNode;
 }
