@@ -12,6 +12,7 @@ import { formatDateTime } from '../../src/lib/format-date';
 import { routes } from '../../src/routes';
 import { COMPLETED_JOB, FAKE_PDF_URL } from '../msw/fixtures';
 import { server } from '../msw/server';
+import { fakePdf } from '../react-pdf-mock';
 import { renderWithProviders } from '../render-app';
 
 /** The app's real route table (layout, login guard and pages). */
@@ -360,5 +361,105 @@ describe('JobDetailPage', () => {
       await screen.findByRole('heading', { name: COMPLETED_JOB.name }),
     ).toBeInTheDocument();
     expect(requestedId).toBe(JOB_ID);
+  });
+});
+
+describe('JobDetailPage PDF viewer (FR-06)', () => {
+  beforeEach(() => {
+    setPassword('clave-correcta');
+  });
+
+  it('shows the PDF next to the findings, with a tab for each on phones', async () => {
+    serveJob(completed());
+    renderJobPage();
+
+    expect(await screen.findByText('Página 1 del PDF')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Documento' }),
+    ).toBeInTheDocument();
+    // Tabs (only visible on narrow screens, styles.css); findings first.
+    expect(screen.getByRole('tab', { name: 'Hallazgos' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(screen.getByRole('tab', { name: 'Documento' })).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+  });
+
+  it('jumps to the page of a finding and opens the "Documento" tab', async () => {
+    fakePdf.pageCount = 100;
+    serveJob(completed());
+    renderJobPage();
+    const user = userEvent.setup();
+    await screen.findByText('Página 1 del PDF');
+
+    await user.click(screen.getByRole('button', { name: 'Ver página 30' }));
+
+    expect(screen.getByText('Página 30 del PDF')).toBeInTheDocument();
+    expect(screen.getByText('30 / 100')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Documento' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+  });
+
+  it('renders only one page of a 500-page PDF', async () => {
+    fakePdf.pageCount = 500;
+    serveJob(completed());
+    renderJobPage();
+
+    await screen.findByText('Página 1 del PDF');
+    expect(screen.getAllByTestId('pdf-page')).toHaveLength(1);
+  });
+
+  it('shows "El PDF ya no está disponible" and keeps the findings', async () => {
+    serveJob({ ...completed(), pdfUrl: null });
+    renderJobPage();
+
+    expect(
+      await screen.findByText('El PDF ya no está disponible'),
+    ).toBeInTheDocument();
+    expect(within(findingsList()).getAllByRole('article')).toHaveLength(3);
+    expect(screen.queryByTestId('pdf-document')).not.toBeInTheDocument();
+    // Nothing to jump to.
+    expect(
+      screen.queryByRole('button', { name: /^Ver página/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('asks for a fresh PDF link once when the PDF cannot be loaded', async () => {
+    const expiredUrl = `${FAKE_PDF_URL}-expired`;
+    const freshUrl = `${FAKE_PDF_URL}-fresh`;
+    fakePdf.failingUrls.add(expiredUrl);
+    const requests = serveJob(
+      { ...completed(), pdfUrl: expiredUrl },
+      { ...completed(), pdfUrl: freshUrl },
+    );
+    renderJobPage();
+
+    expect(await screen.findByText('Página 1 del PDF')).toBeInTheDocument();
+    expect(requests.count).toBe(2);
+    expect(fakePdf.loadedUrls).toEqual([expiredUrl, freshUrl]);
+  });
+
+  it('shows an error when the fresh link fails too, after exactly one refetch', async () => {
+    const firstUrl = `${FAKE_PDF_URL}-1`;
+    const secondUrl = `${FAKE_PDF_URL}-2`;
+    fakePdf.failingUrls.add(firstUrl);
+    fakePdf.failingUrls.add(secondUrl);
+    const requests = serveJob(
+      { ...completed(), pdfUrl: firstUrl },
+      { ...completed(), pdfUrl: secondUrl },
+    );
+    renderJobPage();
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No se pudo cargar el PDF.',
+    );
+    expect(requests.count).toBe(2);
+    // The findings are still there.
+    expect(within(findingsList()).getAllByRole('article')).toHaveLength(3);
   });
 });

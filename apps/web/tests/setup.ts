@@ -4,13 +4,17 @@
 import '@testing-library/jest-dom/vitest';
 
 import { cleanup } from '@testing-library/react';
-import { afterAll, afterEach, beforeAll } from 'vitest';
+import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 
 import { server } from './msw/server';
+import { resetFakePdf } from './react-pdf-mock';
 import {
   recordUnhandledRequest,
   takeUnhandledRequests,
 } from './msw/unhandled-requests';
+
+// jsdom cannot draw PDFs, so every test uses the fake react-pdf (ADR-0013).
+vi.mock('react-pdf', () => import('./react-pdf-mock'));
 
 beforeAll(() => {
   server.listen({ onUnhandledFrame: blockUnhandledRequest });
@@ -19,6 +23,7 @@ beforeAll(() => {
 afterEach(() => {
   // Unmount what the test rendered, so the next test starts with an empty page.
   cleanup();
+  resetFakePdf();
   // Remove the overrides a test added with `server.use(...)`.
   server.resetHandlers();
   // The stored password must not leak from one test to the next.
