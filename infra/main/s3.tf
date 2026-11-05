@@ -94,8 +94,8 @@ data "aws_iam_policy_document" "data_bucket" {
 }
 
 # The CORS rules of this bucket need the CloudFront domain, so they are added
-# with the distribution (#32). The S3 event that starts analyze-pdf is added
-# with the Lambdas (#30).
+# with the distribution (#32). The S3 event that starts analyze-pdf is in
+# lambdas.tf.
 
 # ---------------------------------------------------------------------------
 # web bucket

@@ -88,3 +88,5 @@ Everything in AWS is created by Terraform, in region `us-east-1` (ADR-0011):
 - **Locally:** copy `infra/main/terraform.tfvars.example` to `infra/main/terraform.tfvars` (git-ignored) and write the address there, or pass `-var 'budget_alert_email=name@example.com'`.
 
 `terraform validate` does not need it; `plan` and `apply` do.
+
+`plan` and `apply` also need the five Lambda zips, because Terraform hashes each one to know whether the code changed. Build them first, from the repository root, with `npm run build:api` (it writes `apps/api/dist/<handler>.zip`).

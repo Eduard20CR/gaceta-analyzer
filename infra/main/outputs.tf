@@ -30,3 +30,13 @@ output "web_bucket_arn" {
   description = "ARN of the web bucket, for the CloudFront bucket policy."
   value       = aws_s3_bucket.web.arn
 }
+
+output "lambda_function_names" {
+  description = "Name of each Lambda in AWS, by logical name (for example create-job = gaceta-analyzer-create-job)."
+  value       = { for name, function in aws_lambda_function.this : name => function.function_name }
+}
+
+output "lambda_invoke_arns" {
+  description = "Invoke ARN of each Lambda, by logical name, for the API Gateway integrations (#31)."
+  value       = { for name, function in aws_lambda_function.this : name => function.invoke_arn }
+}
