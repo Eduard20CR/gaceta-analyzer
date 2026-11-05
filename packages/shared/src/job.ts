@@ -41,8 +41,6 @@ export interface Job {
   status: JobStatus;
   pageCount?: number;
   totalBlocks?: number;
-  /** Progress: how many blocks have been analyzed so far. */
-  processedBlocks?: number;
   /** Pages from blocks that failed. */
   failedPages?: number[];
   findingsCount?: number;

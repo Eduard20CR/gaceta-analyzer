@@ -61,7 +61,6 @@ When the PDF finishes uploading, the system analyzes it without any further acti
   - `not_found`: the quote was not found.
 - Duplicate findings caused by overlapping pages are removed.
 - Findings are sorted by page number.
-- Progress is updated during the analysis: processed blocks out of total blocks.
 - If a block fails after 3 retries, the analysis continues with the remaining blocks, and the result lists the pages that could not be analyzed.
 - If **all** blocks fail, the job ends as `FAILED`.
 
@@ -69,11 +68,11 @@ When the PDF finishes uploading, the system analyzes it without any further acti
 
 ## FR-04 — View the status and result of an analysis · v1
 
-The user sees the progress of an analysis and, when it finishes, its results.
+The user sees whether an analysis is still running and, when it finishes, its results.
 
 **Acceptance criteria**
 - The job page shows: name, search query, pages per block, creation date and status.
-- While the status is `PENDING_UPLOAD` or `PROCESSING`, the web app polls the API every **4 seconds** and shows the progress ("Analizando bloque 7 de 30").
+- While the status is `PENDING_UPLOAD` or `PROCESSING`, the web app polls the API every **4 seconds** and shows that the analysis is still running ("Analizando el documento…"). It does not show per-block progress (ADR-0014).
 - When the status is `COMPLETED`:
   - A **summary** is shown: total findings and the list of pages with high or medium relevance.
   - The **findings list** is shown, each with page, topic, relevance, quote, reason and verification status.

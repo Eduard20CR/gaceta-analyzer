@@ -17,7 +17,6 @@ export const COMPLETED_JOB: Job = {
   status: 'COMPLETED',
   pageCount: 120,
   totalBlocks: 30,
-  processedBlocks: 30,
   failedPages: [],
   findingsCount: 1,
   relevantPages: [14],
