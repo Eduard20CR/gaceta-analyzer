@@ -46,13 +46,14 @@ data "aws_iam_policy_document" "github_deploy_trust" {
     #
     # StringEquals (not StringLike), so no other repository, branch or tag can
     # match by accident. Note: a job that sets `environment:` gets a different
-    # subject ("repo:<repo>:environment:<name>") and would be rejected.
+    # subject ("<prefix>:environment:<name>") and would be rejected. The prefix
+    # is explained in variables.tf (github_oidc_subject_prefix).
     condition {
       test     = "StringEquals"
       variable = "${local.github_oidc_host}:sub"
       values = [
-        "repo:${var.github_repository}:ref:refs/heads/main",
-        "repo:${var.github_repository}:pull_request",
+        "${var.github_oidc_subject_prefix}:ref:refs/heads/main",
+        "${var.github_oidc_subject_prefix}:pull_request",
       ]
     }
   }
