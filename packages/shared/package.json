@@ -1,0 +1,14 @@
+{
+  "name": "@gaceta/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Types, constants and API contract shared by the web app and the API.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

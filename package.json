@@ -1,0 +1,19 @@
+{
+  "name": "gaceta-analyzer",
+  "private": true,
+  "description": "Finds the pages and verbatim quotes of a long PDF that relate to the user's topics.",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}

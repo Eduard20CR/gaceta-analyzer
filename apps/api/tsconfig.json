@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Node.js globals (process, Buffer, console) for the Lambda runtime.
+    "types": ["node"]
+  },
+  "include": ["src"]
+}

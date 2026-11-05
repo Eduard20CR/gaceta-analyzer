@@ -12,7 +12,7 @@ The backend has four operations: create job, analyze PDF, get job and list jobs,
 - **One Lambda per operation**: `authorizer`, `create-job`, `analyze-pdf`, `get-job`, `list-jobs`.
 - All of them live in **a single package** (`apps/api`) and share the code in `src/lib/`.
 - **esbuild** produces one `.zip` per handler, containing only the code that handler uses.
-- **Node.js 22.x** runtime (or the latest LTS available on Lambda at implementation time), **arm64** architecture.
+- **Node.js 24.x** runtime (`nodejs24.x`, the latest LTS available on Lambda when the project was scaffolded; move to the next LTS once Lambda supports it), **arm64** architecture.
 
 ## Alternatives considered
 
