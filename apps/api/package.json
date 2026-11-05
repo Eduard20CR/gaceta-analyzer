@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@gaceta/shared": "*",
-    "unpdf": "^2.1.0"
+    "openai": "^7.51.0",
+    "unpdf": "^2.1.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
