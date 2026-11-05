@@ -242,6 +242,62 @@ a {
   background: #fdecec;
 }
 
+/* ---- JobListPage ---- */
+
+.job-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* The whole row is the link, so it is a big target on a phone. */
+.job-list__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.job-list__item:hover {
+  background: var(--color-surface);
+}
+
+.job-list__name {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.job-list__details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  color: var(--color-muted);
+}
+
+.job-list__load-more {
+  margin-top: 0.5rem;
+}
+
+.empty-job-list {
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+/* A link that looks like a button (for example "Crear el primer análisis"). */
+a.button {
+  display: inline-block;
+  text-decoration: none;
+}
+
 /* ---- LoginPage ---- */
 
 .login {
