@@ -40,3 +40,8 @@ output "lambda_invoke_arns" {
   description = "Invoke ARN of each Lambda, by logical name, for the API Gateway integrations (#31)."
   value       = { for name, function in aws_lambda_function.this : name => function.invoke_arn }
 }
+
+output "api_endpoint" {
+  description = "URL of the HTTP API (origin of the /api/* behavior in CloudFront, #32, and VITE_DEV_API_PROXY_TARGET for local development)."
+  value       = aws_apigatewayv2_api.http.api_endpoint
+}
