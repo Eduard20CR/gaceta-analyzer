@@ -10,7 +10,10 @@
     "analyze:local": "tsx scripts/analyze-local.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1162.0",
     "@aws-sdk/client-ssm": "^3.1162.0",
+    "@aws-sdk/s3-presigned-post": "^3.1162.0",
+    "@aws-sdk/s3-request-presigner": "^3.1162.0",
     "@gaceta/shared": "*",
     "openai": "^7.51.0",
     "unpdf": "^2.1.0",
