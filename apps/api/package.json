@@ -10,7 +10,9 @@
     "analyze:local": "tsx scripts/analyze-local.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1162.0",
     "@aws-sdk/client-ssm": "^3.1162.0",
+    "@aws-sdk/lib-dynamodb": "^3.1162.0",
     "@gaceta/shared": "*",
     "openai": "^7.51.0",
     "unpdf": "^2.1.0",
