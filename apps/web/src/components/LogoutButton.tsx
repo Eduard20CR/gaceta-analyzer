@@ -15,7 +15,7 @@ export function LogoutButton() {
   }
 
   return (
-    <Button variant="secondary" onClick={handleClick}>
+    <Button variant="ghost" onClick={handleClick}>
       Cerrar sesión
     </Button>
   );

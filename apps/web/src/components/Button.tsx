@@ -1,8 +1,11 @@
 import type { ButtonHTMLAttributes } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  /** `primary` for the main action of a page, `secondary` for the rest. */
-  variant?: 'primary' | 'secondary';
+  /**
+   * `primary` for the main action of a page, `secondary` for the rest, and
+   * `ghost` (no box until hovered) for quiet actions such as "Cerrar sesión".
+   */
+  variant?: 'primary' | 'secondary' | 'ghost';
 }
 
 /**

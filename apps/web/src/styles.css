@@ -1,7 +1,16 @@
 /*
- * Global styles of the web app (#36). Plain CSS, no UI framework: the app has
- * a handful of screens and its user is not technical, so the priorities are a
- * large readable font, strong contrast and visible keyboard focus.
+ * Global styles of the web app (#36, refreshed in #88). Plain CSS, no UI
+ * framework.
+ *
+ * The look is calm and clean (light theme only): an off-white page, white
+ * cards with a soft shadow, one green accent for the main actions and a clear
+ * type scale. The user is not technical and reads long quotes, so the old
+ * priorities stay: large readable text, strong contrast (WCAG AA) and a
+ * visible keyboard focus.
+ *
+ * Every color, size, radius and shadow is a token (a CSS variable) on `:root`.
+ * Rules below only use `var(--…)`, so changing the look means changing the
+ * tokens, not hunting for values in 600 lines.
  *
  * Class names follow "block__element--modifier" (for example
  * `layout__header`, `button--primary`), so it is clear which component a rule
@@ -9,28 +18,114 @@
  */
 
 :root {
-  --color-text: #1a1a1a;
-  --color-muted: #4a4a4a;
-  --color-background: #ffffff;
-  --color-surface: #f4f5f7;
-  --color-border: #c9ccd1;
-  --color-primary: #0b5cad;
-  --color-primary-hover: #084684;
-  --color-focus: #ff9900;
-  --color-error-text: #8a1c1c;
-  --color-error-background: #fdecec;
+  /* ---- Colors ---- */
 
-  --font-family:
-    system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-  --content-max-width: 960px;
-  --radius: 6px;
+  /* Neutrals. Text colors are checked against both page and surface. */
+  --color-page: #f7f8f8; /* Off-white page background. */
+  --color-surface: #ffffff; /* Cards, header, inputs. */
+  --color-surface-muted: #f1f3f4; /* Tinted areas inside a card. */
+  --color-viewer: #e9ecee; /* Behind the PDF page, like a desk. */
+  --color-border: #e3e6e8; /* Soft lines between areas. */
+  --color-border-strong: #8a9198; /* Input borders: 3:1 against white. */
+  --color-text: #1c1d1f; /* 16.9:1 on white. */
+  --color-text-muted: #5b6168; /* 6.3:1 on white, 5.9:1 on the page. */
+
+  /* The accent (emerald green) for primary actions, links and focus. */
+  --color-accent: #0b7a4b; /* 5.4:1 with white text. */
+  --color-accent-hover: #075e39;
+  --color-accent-soft: #e7f5ee; /* Tinted background of accent things. */
+  --color-accent-text: #0a6b42; /* 6.6:1 on white, 5.9:1 on accent-soft. */
+  --color-on-accent: #ffffff;
+
+  /* Errors and warnings. */
+  --color-danger: #c4262e;
+  --color-danger-text: #a3161d; /* 7.8:1 on white, 6.8:1 on danger-soft. */
+  --color-danger-soft: #fdeceb;
+  --color-warning: #d98a0b;
+  --color-warning-text: #8a4600; /* 7.1:1 on white, 6.5:1 on warning-soft. */
+  --color-warning-soft: #fff4e0;
+
+  /* Job status badges: text, background and the dot. */
+  --color-status-pending-text: #4b5259; /* 6.9:1 on its background. */
+  --color-status-pending-bg: #eef0f2;
+  --color-status-pending-dot: #8a9198;
+  --color-status-processing-text: #1e4fc2; /* 6.2:1 on its background. */
+  --color-status-processing-bg: #e8effd;
+  --color-status-processing-dot: #3b6fe0;
+  --color-status-completed-text: #0a6b42; /* 5.9:1 on its background. */
+  --color-status-completed-bg: #e6f6ee;
+  --color-status-completed-dot: #1f9d63;
+  --color-status-failed-text: #a3161d; /* 6.8:1 on its background. */
+  --color-status-failed-bg: #fdeceb;
+  --color-status-failed-dot: #e5484d;
+
+  /* ---- Typography ---- */
+
+  /* Inter is bundled with the app (@fontsource-variable/inter, imported in
+     main.tsx), so no request goes to a font CDN. The system fonts are the
+     fallback while it loads. */
+  --font-sans:
+    'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, Arial,
+    sans-serif;
+
+  --text-sm: 0.9375rem; /* 15px: secondary notes and badges. */
+  --text-md: 1.0625rem; /* 17px: body text, never smaller (#36). */
+  --text-lg: 1.25rem; /* 20px */
+  --text-xl: 1.5rem; /* 24px: section titles (h2). */
+  --text-2xl: 1.875rem; /* 30px: page titles (h1). */
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --line-height-body: 1.6;
+  --line-height-heading: 1.2;
+
+  /* ---- Spacing ---- */
+
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.5rem; /* 24px */
+  --space-6: 2rem; /* 32px */
+  --space-7: 3rem; /* 48px */
+  --space-8: 4rem; /* 64px */
+
+  /* ---- Shapes and depth ---- */
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgb(16 24 32 / 6%), 0 1px 3px rgb(16 24 32 / 4%);
+  --shadow-md: 0 4px 16px rgb(16 24 32 / 8%), 0 1px 3px rgb(16 24 32 / 6%);
+
+  /* ---- Sizes ---- */
+
+  --content-max-width: 64rem;
+  --header-height: 4rem;
+  /* Comfortable click and touch target for every control (#88). */
+  --control-height: 2.75rem; /* 44px */
+  --border-width: 1px;
+  --border-width-thick: 2px; /* Dashed drop zone and drawn chevrons. */
+  --focus-offset: 2px;
+  --focus-width: 3px;
+  --accent-bar-width: 4px;
+
+  --transition-fast: 150ms ease;
+
+  /* Icon in the PDF file drop zone (an arrow going up into a tray). It is a
+     data URI so the stroke color is written here, with the other colors. */
+  --icon-upload: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%230b7a4b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 15V4'/%3E%3Cpath d='m7 9 5-5 5 5'/%3E%3Cpath d='M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3'/%3E%3C/svg%3E");
 
   color: var(--color-text);
-  background: var(--color-background);
-  font-family: var(--font-family);
-  /* At least 16px for body text (#36): the user reads long quotes. */
+  background: var(--color-page);
+  font-family: var(--font-sans);
   font-size: 100%;
-  line-height: 1.5;
+  line-height: var(--line-height-body);
 }
 
 *,
@@ -41,10 +136,13 @@
 
 body {
   margin: 0;
-  font-size: 1.0625rem; /* 17px */
+  /* At least 17px for body text (#36): the user reads long quotes. */
+  font-size: var(--text-md);
   /* Long words (file names, URLs) wrap instead of making the page wider than
      the screen, so nothing overflows at 375px. */
   overflow-wrap: anywhere;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 img,
@@ -53,21 +151,69 @@ iframe {
   max-width: 100%;
 }
 
+h1,
+h2 {
+  line-height: var(--line-height-heading);
+  letter-spacing: -0.02em;
+}
+
 h1 {
-  font-size: 1.75rem;
-  line-height: 1.25;
-  margin: 0 0 1rem;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  margin: 0 0 var(--space-5);
+}
+
+h2 {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  margin: 0 0 var(--space-4);
+}
+
+p {
+  margin: 0 0 var(--space-3);
 }
 
 a {
-  color: var(--color-primary);
+  color: var(--color-accent-text);
+  font-weight: var(--weight-medium);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--color-accent-hover);
 }
 
 /* Visible focus on every interactive element, only when using the keyboard
    (`:focus-visible`), so mouse clicks do not leave a ring behind. */
 :focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 2px;
+  outline: var(--focus-width) solid var(--color-accent);
+  outline-offset: var(--focus-offset);
+}
+
+/* Short transitions on hover and focus, only for people who did not ask
+   their system for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+  a,
+  button,
+  input,
+  textarea,
+  .job-list__item {
+    transition:
+      color var(--transition-fast),
+      background-color var(--transition-fast),
+      border-color var(--transition-fast),
+      box-shadow var(--transition-fast);
+  }
+}
+
+/* ---- Card: a white section with rounded corners and a soft shadow ---- */
+
+.card {
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
 }
 
 /* ---- Layout ---- */
@@ -78,9 +224,17 @@ a {
   flex-direction: column;
 }
 
+/* White bar that stays at the top while the page scrolls. */
 .layout__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  min-height: var(--header-height);
+  display: flex;
+  align-items: center;
+  border-bottom: var(--border-width) solid var(--color-border);
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .layout__header-content,
@@ -88,75 +242,147 @@ a {
   width: 100%;
   max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 var(--space-4);
 }
 
 .layout__header-content {
   display: flex;
-  flex-wrap: wrap; /* On a phone the links move below the app name. */
+  flex-wrap: wrap; /* On a phone the buttons move below the app name. */
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem 1.5rem;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
+  gap: var(--space-2) var(--space-5);
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
 }
 
 .layout__app-name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--control-height);
   color: var(--color-text);
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.01em;
   text-decoration: none;
+}
+
+.layout__app-name:hover {
+  color: var(--color-text);
+}
+
+/* The small green square with a document icon next to the app name. */
+.layout__logo {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-on-accent);
+  background: var(--color-accent);
 }
 
 .layout__nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 1rem;
-}
-
-.layout__nav-link {
-  font-weight: 600;
+  gap: var(--space-2);
 }
 
 .layout__main {
   flex: 1;
-  padding-top: 1.5rem;
-  padding-bottom: 2rem;
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-7);
+}
+
+/* The job page uses the whole width of the screen, like a PDF reader app:
+   the document on the left and the findings on the right. */
+.layout:has(.job-detail) .layout__header-content,
+.layout:has(.job-detail) .layout__main {
+  max-width: none;
+  padding-left: var(--space-5);
+  padding-right: var(--space-5);
+}
+
+.layout:has(.job-detail) .layout__main {
+  padding-top: var(--space-5);
+  padding-bottom: var(--space-5);
+}
+
+/* On a phone two rows of header would take too much of the screen if they
+   stayed on top while scrolling. */
+@media (max-width: 640px) {
+  .layout__header {
+    position: static;
+  }
+
+  .layout:has(.job-detail) .layout__header-content,
+  .layout:has(.job-detail) .layout__main {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
 }
 
 /* ---- Button ---- */
 
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
   font: inherit;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius);
-  border: 2px solid var(--color-primary);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: 1.2;
+  text-decoration: none;
   cursor: pointer;
 }
 
 .button--primary {
-  color: #ffffff;
-  background: var(--color-primary);
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  box-shadow: var(--shadow-sm);
 }
 
 .button--primary:hover {
-  background: var(--color-primary-hover);
-  border-color: var(--color-primary-hover);
+  color: var(--color-on-accent);
+  background: var(--color-accent-hover);
 }
 
 .button--secondary {
-  color: var(--color-primary);
-  background: var(--color-background);
-}
-
-.button--secondary:hover {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
   background: var(--color-surface);
 }
 
+.button--secondary:hover {
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+}
+
+/* A quiet button without a box, for actions such as "Cerrar sesión". */
+.button--ghost {
+  color: var(--color-text-muted);
+  background: transparent;
+}
+
+.button--ghost:hover {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+}
+
 .button:disabled {
-  opacity: 0.6;
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+  background: var(--color-surface-muted);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
@@ -166,12 +392,13 @@ a {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--color-error-text);
-  border-radius: var(--radius);
-  color: var(--color-error-text);
-  background: var(--color-error-background);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-left: var(--accent-bar-width) solid var(--color-danger);
+  border-radius: var(--radius-md);
+  color: var(--color-danger-text);
+  background: var(--color-danger-soft);
+  font-weight: var(--weight-medium);
 }
 
 .error-message__text {
@@ -184,15 +411,16 @@ a {
 .spinner {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  color: var(--color-muted);
+  gap: var(--space-3);
+  color: var(--color-text-muted);
 }
 
 .spinner__circle {
+  flex: none;
   width: 1.5rem;
   height: 1.5rem;
-  border: 3px solid var(--color-border);
-  border-top-color: var(--color-primary);
+  border: var(--focus-width) solid var(--color-border);
+  border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spinner-rotate 0.8s linear infinite;
 }
@@ -210,259 +438,310 @@ a {
   }
 }
 
-/* ---- JobDetailPage ---- */
-
-.job-detail__title {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.job-detail__title h1 {
-  margin: 0;
-}
-
-/* "Búsqueda", "Páginas por bloque", "Creado": name and value side by side. */
-.job-detail__facts {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 0.25rem 1rem;
-  margin: 0 0 1.5rem;
-}
-
-.job-detail__facts dt {
-  font-weight: 600;
-}
-
-.job-detail__facts dd {
-  margin: 0;
-}
-
-.job-running {
-  padding: 1rem;
-  border-radius: var(--radius);
-  background: var(--color-surface);
-}
-
-.job-summary {
-  margin-bottom: 1.5rem;
-}
-
-.job-summary__failed-pages {
-  padding: 0.75rem 1rem;
-  border-left: 4px solid var(--color-focus);
-  background: var(--color-surface);
-}
-
-.findings-filter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.findings-filter__option {
-  font: inherit;
-  padding: 0.25rem 0.75rem;
-  border: 2px solid var(--color-primary);
-  border-radius: 999px;
-  color: var(--color-primary);
-  background: var(--color-background);
-  cursor: pointer;
-}
-
-.findings-filter__option[aria-pressed='true'] {
-  color: #ffffff;
-  background: var(--color-primary);
-}
-
-.findings-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.finding-card {
-  padding: 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-}
-
-.finding-card__header {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.finding-card__page,
-.finding-card__topic {
-  font-weight: 600;
-}
-
-.finding-card__relevance--high {
-  color: var(--color-error-text);
-  font-weight: 600;
-}
-
-/* The verbatim text of the PDF, set apart like a quotation. */
-.finding-card__quote {
-  margin: 0 0 0.5rem;
-  padding: 0.5rem 1rem;
-  border-left: 4px solid var(--color-primary);
-  background: var(--color-surface);
-  font-style: italic;
-}
-
-.finding-card__reason {
-  margin: 0 0 0.5rem;
-}
-
-.finding-card__verification {
-  margin: 0;
-  color: var(--color-muted);
-  font-size: 0.9375rem;
-}
-
-.finding-card__warning {
-  margin: 0 0 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius);
-  color: var(--color-error-text);
-  background: var(--color-error-background);
-  font-weight: 600;
-}
-
 /* ---- StatusBadge ---- */
 
-/* Text and background pairs chosen for a contrast of at least 4.5:1. */
+/* A pill with a colored dot and the status text, so the status is never told
+   by color alone. Text and background pairs have a contrast of at least
+   4.5:1 (see the tokens). */
 .status-badge {
-  display: inline-block;
-  padding: 0.125rem 0.625rem;
-  border-radius: 999px;
-  font-size: 0.9375rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: 1.3;
   white-space: nowrap;
 }
 
+.status-badge::before {
+  content: '';
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
 .status-badge--pending {
-  color: #4a4a4a;
-  background: #e6e7ea;
+  color: var(--color-status-pending-text);
+  background: var(--color-status-pending-bg);
+}
+
+.status-badge--pending::before {
+  background: var(--color-status-pending-dot);
 }
 
 .status-badge--processing {
-  color: #0b4a8a;
-  background: #dcebfb;
+  color: var(--color-status-processing-text);
+  background: var(--color-status-processing-bg);
+}
+
+.status-badge--processing::before {
+  background: var(--color-status-processing-dot);
 }
 
 .status-badge--completed {
-  color: #1d5e2a;
-  background: #def3e3;
+  color: var(--color-status-completed-text);
+  background: var(--color-status-completed-bg);
+}
+
+.status-badge--completed::before {
+  background: var(--color-status-completed-dot);
 }
 
 .status-badge--failed {
-  color: #8a1c1c;
-  background: #fdecec;
+  color: var(--color-status-failed-text);
+  background: var(--color-status-failed-bg);
+}
+
+.status-badge--failed::before {
+  background: var(--color-status-failed-dot);
 }
 
 /* ---- JobListPage ---- */
 
 .job-list {
   list-style: none;
-  margin: 0 0 1rem;
+  margin: 0 0 var(--space-5);
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
-/* The whole row is the link, so it is a big target on a phone. */
+/* Each job is a card and the whole card is the link, so it is a big target. */
 .job-list__item {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  padding: var(--space-4) var(--space-7) var(--space-4) var(--space-5);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
   color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
   text-decoration: none;
 }
 
 .job-list__item:hover {
-  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-md);
+}
+
+/* A chevron (">") drawn with two borders, at the right of the card. It is not
+   text, so screen readers do not read it as part of the link. */
+.job-list__item::after {
+  content: '';
+  position: absolute;
+  right: var(--space-5);
+  top: 50%;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: var(--border-width-thick) solid var(--color-text-muted);
+  border-bottom: var(--border-width-thick) solid var(--color-text-muted);
+  transform: translateY(-50%) rotate(-45deg);
 }
 
 .job-list__name {
-  font-weight: 600;
-  color: var(--color-primary);
+  flex: 1 1 16rem;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
 }
 
 .job-list__details {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 1rem;
-  color: var(--color-muted);
+  gap: var(--space-2) var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
 }
 
 .job-list__load-more {
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
 }
 
+/* No analyses yet: a friendly card with an icon and one button. */
 .empty-job-list {
-  padding: 1.5rem;
-  border-radius: var(--radius);
-  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
 }
 
-/* A link that looks like a button (for example "Crear el primer análisis"). */
-a.button {
-  display: inline-block;
-  text-decoration: none;
+.empty-job-list__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: var(--space-2);
+  border-radius: 50%;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.empty-job-list__text {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
 }
 
 /* ---- LoginPage ---- */
 
 .login {
-  max-width: 24rem;
+  max-width: 26rem;
+  margin: var(--space-7) auto 0;
+  padding: var(--space-6);
+}
+
+.login h1 {
+  font-size: var(--text-xl);
 }
 
 .login__form {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .login__label {
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
 }
 
-.login__input {
+.login__form .button {
+  width: 100%;
+  margin-top: var(--space-3);
+}
+
+/* ---- Form fields (FormField, login, PDF viewer page number) ---- */
+
+.login__input,
+.form-field input[type='text'],
+.form-field input[type='number'],
+.form-field textarea,
+.pdf-viewer__page-form input {
+  min-height: var(--control-height);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background: var(--color-surface);
   font: inherit;
-  padding: 0.5rem 0.75rem;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius);
-  margin-bottom: 0.5rem;
+}
+
+.login__input:hover,
+.form-field input:hover,
+.form-field textarea:hover {
+  border-color: var(--color-text-muted);
+}
+
+/* A soft green halo around the field being typed in, plus the focus outline
+   for keyboard users. */
+.login__input:focus,
+.form-field input:focus,
+.form-field textarea:focus,
+.pdf-viewer__page-form input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 var(--focus-width) var(--color-accent-soft);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.form-field__label {
+  font-weight: var(--weight-semibold);
+}
+
+.form-field__hint {
+  margin: 0 0 var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.form-field input[type='text'],
+.form-field textarea {
+  width: 100%;
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+.form-field input[type='number'] {
+  max-width: 8rem;
+}
+
+.form-field [aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+/* The error under a field: red text with a red bar, so it is not color only
+   on the input border. */
+.form-field__error {
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-3);
+  border-left: var(--accent-bar-width) solid var(--color-danger);
+  color: var(--color-danger-text);
+  font-weight: var(--weight-semibold);
+}
+
+/* The PDF file input looks like a big drop area with an upload icon. The
+   browser still shows its own button and the chosen file name inside. */
+.form-field input[type='file'] {
+  width: 100%;
+  padding: calc(var(--space-7) + var(--space-3)) var(--space-4) var(--space-5);
+  border: var(--border-width-thick) dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted) var(--icon-upload) no-repeat center
+    var(--space-5);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.form-field input[type='file']:hover {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent-soft);
+}
+
+.form-field input[type='file']::file-selector-button {
+  min-height: var(--control-height);
+  margin-right: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
 }
 
 /* ---- NewJobPage ---- */
 
 .new-job {
-  max-width: 40rem;
+  max-width: 44rem;
 }
 
 .new-job__form {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
 }
 
 /* Only groups the inputs so they can be disabled together; no visible box. */
@@ -474,189 +753,572 @@ a.button {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: var(--space-5);
 }
 
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.form-field__label {
-  font-weight: 600;
-}
-
-.form-field__hint {
-  margin: 0;
-  color: var(--color-muted);
-  font-size: 0.9375rem;
-}
-
-.form-field input[type='text'],
-.form-field input[type='number'],
-.form-field textarea {
-  font: inherit;
-  padding: 0.5rem 0.75rem;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius);
-  width: 100%;
-}
-
-.form-field input[type='number'] {
-  max-width: 8rem;
-}
-
-.form-field [aria-invalid='true'] {
-  border-color: var(--color-error-text);
-}
-
-.form-field__error {
-  margin: 0;
-  color: var(--color-error-text);
-  font-weight: 600;
+.new-job__fields:disabled {
+  opacity: 0.7;
 }
 
 .advanced-settings__toggle {
-  font: inherit;
-  font-weight: 600;
-  color: var(--color-primary);
-  background: none;
-  border: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
   padding: 0;
+  border: 0;
+  color: var(--color-accent-text);
+  background: none;
+  font: inherit;
+  font-weight: var(--weight-semibold);
   cursor: pointer;
-  text-decoration: underline;
 }
 
-/* A small arrow that points down when the section is open. */
+/* A small chevron that points right when closed and down when open. */
 .advanced-settings__toggle::before {
-  content: '▸ ';
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: var(--border-width-thick) solid currentColor;
+  border-bottom: var(--border-width-thick) solid currentColor;
+  transform: rotate(-45deg);
 }
 
 .advanced-settings__toggle[aria-expanded='true']::before {
-  content: '▾ ';
+  transform: rotate(45deg);
 }
 
 .advanced-settings__content {
-  margin-top: 0.75rem;
-  padding: 1rem;
-  border-radius: var(--radius);
-  background: var(--color-surface);
+  margin-top: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
 }
 
 .upload-progress {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 
 .upload-progress__label {
-  margin: 0 0 0.25rem;
+  margin: 0 0 var(--space-2);
+  font-weight: var(--weight-medium);
 }
 
+/* A thin rounded bar in the accent color. Each browser draws <progress> with
+   its own parts, so each one gets a rule. */
 .upload-progress__bar {
   width: 100%;
-  height: 1.25rem;
+  height: 0.625rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  appearance: none;
+  background: var(--color-surface-muted);
 }
 
-/* ---- JobResults and PdfViewer ---- */
+.upload-progress__bar::-webkit-progress-bar {
+  background: var(--color-surface-muted);
+}
+
+.upload-progress__bar::-webkit-progress-value {
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+}
+
+.upload-progress__bar::-moz-progress-bar {
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+}
+
+/* ---- JobDetailPage ---- */
+
+/*
+ * On a wide screen the top of the job page has two cards in a row: the job
+ * (name, status, search) above the document, and the summary above the
+ * findings. Both use the same 65 / 35 split as the columns below, so the
+ * edges line up. Everything else takes the whole row.
+ */
+.job-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 65fr) minmax(0, 35fr);
+  gap: var(--space-4) var(--space-5);
+  align-items: stretch;
+}
+
+.job-detail > * {
+  grid-column: 1 / -1;
+}
+
+/* Only when the summary follows (a completed job) do they share the row. */
+.job-detail > .job-detail__header:has(+ .job-summary) {
+  grid-column: 1;
+}
+
+.job-detail > .job-summary {
+  grid-column: 2;
+}
+
+.job-detail__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.job-detail__title h1 {
+  margin: 0;
+}
+
+/* "Búsqueda", "Páginas por bloque", "Creado": a small label above each value,
+   side by side when there is room. */
+.job-detail__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-6);
+  margin: 0;
+}
+
+.job-detail__fact {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.job-detail__facts dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.job-detail__facts dd {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+}
+
+/* Still running: a calm card, no progress bar (ADR-0014). */
+.job-running {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
+}
+
+.job-running .spinner {
+  flex-direction: column; /* The circle above the text, both centered. */
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.job-running p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.job-detail__failed {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.job-detail__failed p {
+  margin: 0;
+}
+
+.job-detail__failed .error-message {
+  align-self: stretch;
+}
+
+.job-summary h2 {
+  font-size: var(--text-lg);
+}
+
+.job-summary p:last-child {
+  margin-bottom: 0;
+}
+
+.job-summary__failed-pages {
+  padding: var(--space-2) var(--space-3);
+  border-left: var(--accent-bar-width) solid var(--color-warning);
+  border-radius: var(--radius-sm);
+  color: var(--color-warning-text);
+  background: var(--color-warning-soft);
+  font-weight: var(--weight-medium);
+}
+
+/* ---- JobResults: the document (65%) and the findings (35%) ---- */
 
 /* Tabs only exist on narrow screens: on wide screens both panels are shown. */
 .job-results__tabs {
   display: none;
 }
 
+/*
+ * Like a PDF reader with a comments column: the two panels fill the height
+ * of the screen below the header and each one scrolls on its own, so the
+ * page stays in view while the user reads the findings.
+ */
 .job-results__columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 1.5rem;
-  align-items: start;
+  grid-template-columns: minmax(0, 65fr) minmax(0, 35fr);
+  gap: var(--space-5);
+  height: calc(100vh - var(--header-height) - 2 * var(--space-5));
+  min-height: 32rem;
 }
 
-/* The viewer stays visible while the user scrolls through the findings. */
-#job-results-document {
-  position: sticky;
-  top: 1rem;
+.job-results__panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Lets the inside scroll instead of growing the panel. */
+  overflow: hidden;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/* The panel title ("Documento", "Hallazgos") as a slim bar on top. */
+.job-results__panel > h2 {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0;
+}
+
+.job-results__panel > p,
+.job-results__panel > [role='status'],
+.job-results__panel > [role='alert'] {
+  margin: var(--space-4);
 }
 
 .job-results__no-pdf {
-  padding: 1rem;
-  border-radius: var(--radius);
-  background: var(--color-surface);
-  font-weight: 600;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  font-weight: var(--weight-semibold);
 }
 
-@media (max-width: 800px) {
+/* The findings column, like the comments of a PDF. */
+.findings-panel__filter {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.findings-list {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--color-page);
+}
+
+/* Relevance filter: a segmented control. The selected option is a white
+   "key" on a grey track. */
+.findings-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+.findings-filter__option {
+  flex: 1 1 auto;
+  min-height: var(--control-height);
+  padding: var(--space-1) var(--space-2);
+  white-space: nowrap;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  background: transparent;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.findings-filter__option:hover {
+  color: var(--color-text);
+}
+
+.findings-filter__option[aria-pressed='true'] {
+  color: var(--color-accent-text);
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---- FindingCard: one finding, like a comment on the PDF ---- */
+
+.finding-card {
+  position: relative;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/* The finding of the page shown in the viewer, like a selected comment. */
+.finding-card[aria-current='true'] {
+  border-color: var(--color-accent);
+  box-shadow:
+    0 0 0 var(--border-width) var(--color-accent),
+    var(--shadow-md);
+}
+
+.finding-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+/* Page number and topic as small chips. */
+.finding-card__page,
+.finding-card__topic {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: 1.7;
+}
+
+.finding-card__page {
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft);
+}
+
+.finding-card__topic {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+}
+
+/* "Relevancia: Alta" with a colored dot, pushed to the right. */
+.finding-card__relevance {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.finding-card__relevance::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-status-pending-dot);
+}
+
+.finding-card__relevance--high {
+  color: var(--color-danger-text);
+  font-weight: var(--weight-semibold);
+}
+
+.finding-card__relevance--high::before {
+  background: var(--color-danger);
+}
+
+.finding-card__relevance--medium {
+  color: var(--color-warning-text);
+}
+
+.finding-card__relevance--medium::before {
+  background: var(--color-warning);
+}
+
+/* The verbatim text of the PDF, set apart like a quotation: a tinted block
+   with an accent bar. Not italic: long italic text is harder to read. */
+.finding-card__quote {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-left: var(--accent-bar-width) solid var(--color-accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--color-surface-muted);
+}
+
+.finding-card__reason {
+  margin: 0 0 var(--space-3);
+}
+
+/* The check of the quote on the left and "Ver página" on the right. */
+.finding-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+}
+
+.finding-card__verification {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.finding-card__show-page {
+  margin-left: auto;
+}
+
+.finding-card__warning {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-left: var(--accent-bar-width) solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  color: var(--color-danger-text);
+  background: var(--color-danger-soft);
+  font-weight: var(--weight-semibold);
+}
+
+/* ---- PdfViewer ---- */
+
+.pdf-viewer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Page navigation on the left, zoom on the right, like a reader app. */
+.pdf-viewer__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.pdf-viewer__nav,
+.pdf-viewer__zoom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pdf-viewer__toolbar .button {
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+}
+
+.pdf-viewer__page-form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pdf-viewer__page-form input {
+  width: 4.5rem;
+  text-align: center;
+}
+
+.pdf-viewer__page-count,
+.pdf-viewer__zoom-level {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  /* Same-width digits, so the toolbar does not jump while paging. */
+  font-variant-numeric: tabular-nums;
+}
+
+.pdf-viewer__zoom-level {
+  min-width: 3.5rem;
+  text-align: center;
+}
+
+/* The grey "desk" behind the page. The page can be wider than the panel when
+   zoomed in: scroll inside it. */
+.pdf-viewer__canvas {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-5);
+  background: var(--color-viewer);
+}
+
+/* The page itself, like a sheet of paper on the desk. */
+.pdf-viewer__canvas .react-pdf__Page {
+  width: fit-content;
+  margin: 0 auto;
+  box-shadow: var(--shadow-md);
+}
+
+/* ---- Narrow screens: one column, tabs to switch ---- */
+
+@media (max-width: 900px) {
+  .job-detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .job-detail > .job-detail__header:has(+ .job-summary),
+  .job-detail > .job-summary {
+    grid-column: 1;
+  }
+
   .job-results__tabs {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-muted);
   }
 
   .job-results__tab {
     flex: 1;
+    min-height: var(--control-height);
+    padding: var(--space-2);
+    border: var(--border-width) solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    background: transparent;
     font: inherit;
-    font-weight: 600;
-    padding: 0.5rem;
-    border: 2px solid var(--color-primary);
-    border-radius: var(--radius);
-    color: var(--color-primary);
-    background: var(--color-background);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
   }
 
   .job-results__tab[aria-selected='true'] {
-    color: #ffffff;
-    background: var(--color-primary);
+    color: var(--color-accent-text);
+    border-color: var(--color-border);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
   }
 
+  /* The page grows with its content instead of filling the screen. */
   .job-results__columns {
     grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    min-height: 0;
   }
 
   .job-results__panel--inactive {
     display: none;
   }
 
-  #job-results-document {
-    position: static;
+  .findings-list {
+    overflow: visible;
   }
-}
 
-.finding-card__show-page {
-  margin-top: 0.75rem;
-}
-
-.pdf-viewer__toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.pdf-viewer__page-form {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.pdf-viewer__page-form input {
-  font: inherit;
-  width: 5rem;
-  padding: 0.25rem 0.5rem;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius);
-}
-
-.pdf-viewer__zoom {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-/* The page can be wider than the column when zoomed in: scroll inside it. */
-.pdf-viewer__canvas {
-  overflow: auto;
-  max-height: 80vh;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-surface);
+  .pdf-viewer__canvas {
+    max-height: 75vh;
+    padding: var(--space-3);
+  }
 }

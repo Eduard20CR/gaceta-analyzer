@@ -62,28 +62,30 @@ export function PdfViewer({
   return (
     <div className="pdf-viewer">
       <div className="pdf-viewer__toolbar">
-        <Button
-          variant="secondary"
-          disabled={pageCount === null || currentPage <= 1}
-          onClick={() => goToPage(currentPage - 1)}
-        >
-          Anterior
-        </Button>
-        {/* `key`: when the page changes (a finding, previous/next), React
+        <div className="pdf-viewer__nav">
+          <Button
+            variant="secondary"
+            disabled={pageCount === null || currentPage <= 1}
+            onClick={() => goToPage(currentPage - 1)}
+          >
+            Anterior
+          </Button>
+          {/* `key`: when the page changes (a finding, previous/next), React
             creates the input again, so it shows the new page number. */}
-        <PageInput
-          key={currentPage}
-          page={currentPage}
-          pageCount={pageCount}
-          onSubmit={goToPage}
-        />
-        <Button
-          variant="secondary"
-          disabled={pageCount === null || currentPage >= pageCount}
-          onClick={() => goToPage(currentPage + 1)}
-        >
-          Siguiente
-        </Button>
+          <PageInput
+            key={currentPage}
+            page={currentPage}
+            pageCount={pageCount}
+            onSubmit={goToPage}
+          />
+          <Button
+            variant="secondary"
+            disabled={pageCount === null || currentPage >= pageCount}
+            onClick={() => goToPage(currentPage + 1)}
+          >
+            Siguiente
+          </Button>
+        </div>
 
         <span className="pdf-viewer__zoom">
           <Button
@@ -93,7 +95,9 @@ export function PdfViewer({
           >
             −
           </Button>
-          <span aria-live="polite">{formatZoom(zoom)}</span>
+          <span className="pdf-viewer__zoom-level" aria-live="polite">
+            {formatZoom(zoom)}
+          </span>
           <Button
             variant="secondary"
             aria-label="Acercar"
@@ -177,7 +181,7 @@ function PageInput({ page, pageCount, onSubmit }: PageInputProps) {
         onKeyDown={handleKeyDown}
         onBlur={apply}
       />
-      <span>
+      <span className="pdf-viewer__page-count">
         {page} / {pageCount ?? '…'}
       </span>
     </div>

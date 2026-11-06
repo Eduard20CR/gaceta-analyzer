@@ -13,7 +13,7 @@ export function JobSummary({ findings, failedPages }: JobSummaryProps) {
   const pages = relevantPages(findings);
 
   return (
-    <section aria-labelledby="job-summary-title" className="job-summary">
+    <section aria-labelledby="job-summary-title" className="job-summary card">
       <h2 id="job-summary-title">Resumen</h2>
       <p>
         {findings.length === 1

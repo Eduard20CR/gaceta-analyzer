@@ -163,7 +163,7 @@ export function NewJobPage() {
     <section className="new-job">
       <h1>Nuevo análisis</h1>
       <form
-        className="new-job__form"
+        className="new-job__form card"
         noValidate
         onSubmit={(event) => void handleSubmit(event)}
       >

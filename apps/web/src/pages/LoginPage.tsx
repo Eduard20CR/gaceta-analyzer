@@ -53,7 +53,7 @@ export function LoginPage() {
   const canSubmit = password !== '' && !isChecking;
 
   return (
-    <section className="login">
+    <section className="login card">
       <h1>Iniciar sesión</h1>
       <form
         className="login__form"
