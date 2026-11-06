@@ -17,7 +17,7 @@ export function JobRunning({ status }: JobRunningProps) {
       : 'Analizando el documento…';
 
   return (
-    <div className="job-running">
+    <div className="job-running card">
       <Spinner label={label} />
       <p>Puede cerrar esta página y volver más tarde: el análisis continúa.</p>
     </div>

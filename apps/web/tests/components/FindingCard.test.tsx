@@ -78,4 +78,16 @@ describe('FindingCard', () => {
 
     expect(onShowPage).toHaveBeenCalledWith(14);
   });
+
+  it('is marked as the current finding when the viewer shows its page', () => {
+    render(<FindingCard finding={FINDING} isActive />);
+
+    expect(screen.getByRole('article')).toHaveAttribute('aria-current', 'true');
+  });
+
+  it('is not marked as current by default', () => {
+    render(<FindingCard finding={FINDING} />);
+
+    expect(screen.getByRole('article')).not.toHaveAttribute('aria-current');
+  });
 });

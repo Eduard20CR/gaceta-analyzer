@@ -1,8 +1,10 @@
 // Results of a COMPLETED job: summary, findings and the PDF (FR-04, FR-06).
 //
-// On a wide screen the findings and the PDF are side by side. On a phone there
-// is no room for both, so two tabs ("Hallazgos" / "Documento") show one at a
-// time; styles.css hides the tabs on wide screens.
+// On a wide screen the page looks like a PDF reader app: the PDF on the left
+// (about 65% of the width) and the findings on the right like the comments of
+// the PDF (about 35%). On a phone there is no room for both, so two tabs
+// ("Hallazgos" / "Documento") show one at a time; styles.css hides the tabs on
+// wide screens.
 
 import type { Finding } from '@gaceta/shared';
 import { Suspense, lazy, useState } from 'react';
@@ -83,33 +85,8 @@ export function JobResults({
       </div>
 
       <div className="job-results__columns">
-        <section
-          id="job-results-findings"
-          aria-labelledby="job-findings-title"
-          className={panelClassName('findings', activeTab)}
-        >
-          <h2 id="job-findings-title">Hallazgos</h2>
-          {findings.length === 0 ? (
-            <p>No se encontraron citas relacionadas con su búsqueda.</p>
-          ) : (
-            <>
-              <FindingsFilter
-                value={filter}
-                counts={countByRelevance(findings)}
-                onChange={setFilter}
-              />
-              <ul className="findings-list">
-                {visibleFindings.map((finding, index) => (
-                  // Two findings can share a page, so the index is part of the key.
-                  <li key={`${finding.page}-${index}`}>
-                    <FindingCard finding={finding} onShowPage={onShowPage} />
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </section>
-
+        {/* The document comes first, so the reading order matches what is
+            seen on a wide screen (document left, findings right). */}
         <section
           id="job-results-document"
           aria-labelledby="job-document-title"
@@ -122,6 +99,41 @@ export function JobResults({
             onPageChange={setViewerPage}
             onRefreshPdfUrl={onRefreshPdfUrl}
           />
+        </section>
+
+        <section
+          id="job-results-findings"
+          aria-labelledby="job-findings-title"
+          className={panelClassName('findings', activeTab)}
+        >
+          <h2 id="job-findings-title">Hallazgos</h2>
+          {findings.length === 0 ? (
+            <p>No se encontraron citas relacionadas con su búsqueda.</p>
+          ) : (
+            <>
+              <div className="findings-panel__filter">
+                <FindingsFilter
+                  value={filter}
+                  counts={countByRelevance(findings)}
+                  onChange={setFilter}
+                />
+              </div>
+              <ul className="findings-list">
+                {visibleFindings.map((finding, index) => (
+                  // Two findings can share a page, so the index is part of the key.
+                  <li key={`${finding.page}-${index}`}>
+                    <FindingCard
+                      finding={finding}
+                      onShowPage={onShowPage}
+                      // Like a selected comment: the finding of the page that
+                      // the viewer shows stands out.
+                      isActive={pdfUrl !== null && finding.page === viewerPage}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </section>
       </div>
     </>

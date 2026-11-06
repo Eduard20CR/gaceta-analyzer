@@ -6,6 +6,9 @@ import { createBrowserRouter } from 'react-router';
 
 import { App, createAppQueryClient } from './app';
 import { routes } from './routes';
+// The Inter font files are bundled with the app (#88), so no request goes to a
+// font CDN. Imported before styles.css, which uses the font.
+import '@fontsource-variable/inter';
 import './styles.css';
 
 const router = createBrowserRouter(routes);

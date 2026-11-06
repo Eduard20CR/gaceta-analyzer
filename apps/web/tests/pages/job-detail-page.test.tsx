@@ -399,6 +399,15 @@ describe('JobDetailPage PDF viewer (FR-06)', () => {
 
     expect(screen.getByText('Página 30 del PDF')).toBeInTheDocument();
     expect(screen.getByText('30 / 100')).toBeInTheDocument();
+    // The finding of the page in the viewer stands out, like a selected comment.
+    const shownFinding = screen
+      .getByRole('button', { name: 'Ver página 30' })
+      .closest('article');
+    expect(shownFinding).toHaveAttribute('aria-current', 'true');
+    const otherFinding = screen
+      .getByRole('button', { name: 'Ver página 14' })
+      .closest('article');
+    expect(otherFinding).not.toHaveAttribute('aria-current');
     expect(screen.getByRole('tab', { name: 'Documento' })).toHaveAttribute(
       'aria-selected',
       'true',

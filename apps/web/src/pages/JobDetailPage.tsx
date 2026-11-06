@@ -96,20 +96,30 @@ function JobLoadError({ error, onRetry }: JobLoadErrorProps) {
 
 function JobHeader({ job }: { job: Job }) {
   return (
-    <header className="job-detail__header">
+    <header className="job-detail__header card">
       <div className="job-detail__title">
         <h1>{job.name}</h1>
         <StatusBadge status={job.status} />
       </div>
       <dl className="job-detail__facts">
-        <dt>Búsqueda</dt>
-        <dd>{job.query}</dd>
-        <dt>Páginas por bloque</dt>
-        <dd>{job.pagesPerBlock}</dd>
-        <dt>Creado</dt>
-        <dd>
-          <time dateTime={job.createdAt}>{formatDateTime(job.createdAt)}</time>
-        </dd>
+        {/* Each name and value pair is wrapped in a <div> (valid inside <dl>)
+            so styles.css can place the pairs side by side. */}
+        <div className="job-detail__fact">
+          <dt>Búsqueda</dt>
+          <dd>{job.query}</dd>
+        </div>
+        <div className="job-detail__fact">
+          <dt>Páginas por bloque</dt>
+          <dd>{job.pagesPerBlock}</dd>
+        </div>
+        <div className="job-detail__fact">
+          <dt>Creado</dt>
+          <dd>
+            <time dateTime={job.createdAt}>
+              {formatDateTime(job.createdAt)}
+            </time>
+          </dd>
+        </div>
       </dl>
     </header>
   );
@@ -130,12 +140,14 @@ function JobBody({ job, findings, pdfUrl, onRefreshPdfUrl }: JobBodyProps) {
       return <JobRunning status={job.status} />;
     case 'FAILED':
       return (
-        <div className="job-detail__failed">
+        <div className="job-detail__failed card">
           <ErrorMessage
             message={job.errorMessage ?? JOB_FAILED_FALLBACK_MESSAGE}
           />
           <p>
-            <Link to="/jobs/new">Crear un análisis nuevo</Link>
+            <Link to="/jobs/new" className="button button--secondary">
+              Crear un análisis nuevo
+            </Link>
           </p>
         </div>
       );
